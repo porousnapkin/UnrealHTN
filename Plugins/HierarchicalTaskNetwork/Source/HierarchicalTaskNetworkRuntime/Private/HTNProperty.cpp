@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "FHTNProperty.h"
+#include "HTNProperty.h"
 
 FHTNProperty::FHTNProperty()
 	: Type(EHTNPropertyType::Invalid)

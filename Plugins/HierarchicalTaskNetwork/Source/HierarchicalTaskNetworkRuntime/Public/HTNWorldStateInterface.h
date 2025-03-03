@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FHTNProperty.h"
+#include "HTNProperty.h"
 #include "UObject/Interface.h"
-#include "IHTNWorldState.generated.h"
+#include "HTNWorldStateInterface.generated.h"
 
 /**
  * Interface for HTN world state representation.
@@ -13,12 +13,12 @@
  * It provides methods to get, set, and manipulate these properties.
  */
 UINTERFACE(MinimalAPI, Blueprintable)
-class UHTNWorldState : public UInterface
+class UHTNWorldStateInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class HIERARCHICALTASKNETWORKRUNTIME_API IHTNWorldState
+class HIERARCHICALTASKNETWORKRUNTIME_API IHTNWorldStateInterface
 {
 	GENERATED_BODY()
 
@@ -61,7 +61,7 @@ public:
 	 * @return A new world state with the same properties as this one
 	 */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HTN|WorldState")
-	TScriptInterface<IHTNWorldState> Clone() const;
+	TScriptInterface<IHTNWorldStateInterface> Clone() const;
 
 	/**
 	 * Check if this world state is equal to another.
@@ -69,7 +69,7 @@ public:
 	 * @return true if the world states are equal, false otherwise
 	 */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HTN|WorldState")
-	bool Equals(const TScriptInterface<IHTNWorldState>& Other) const;
+	bool Equals(const TScriptInterface<IHTNWorldStateInterface>& Other) const;
 
 	/**
 	 * Create a difference between this world state and another.
@@ -78,7 +78,7 @@ public:
 	 * @return A world state containing only the differing properties
 	 */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HTN|WorldState")
-	TScriptInterface<IHTNWorldState> CreateDifference(const TScriptInterface<IHTNWorldState>& Other) const;
+	TScriptInterface<IHTNWorldStateInterface> CreateDifference(const TScriptInterface<IHTNWorldStateInterface>& Other) const;
 
 	/**
 	 * Get all property names in this world state.
@@ -117,7 +117,7 @@ public:
 // Template specializations for type-safe property access
 
 template<>
-FORCEINLINE bool IHTNWorldState::GetPropertyValue<bool>(FName Key, const bool& DefaultValue) const
+FORCEINLINE bool IHTNWorldStateInterface::GetPropertyValue<bool>(FName Key, const bool& DefaultValue) const
 {
 	FHTNProperty Value;
 	if (GetProperty(Key, Value) && Value.GetType() == EHTNPropertyType::Boolean)
@@ -128,7 +128,7 @@ FORCEINLINE bool IHTNWorldState::GetPropertyValue<bool>(FName Key, const bool& D
 }
 
 template<>
-FORCEINLINE int32 IHTNWorldState::GetPropertyValue<int32>(FName Key, const int32& DefaultValue) const
+FORCEINLINE int32 IHTNWorldStateInterface::GetPropertyValue<int32>(FName Key, const int32& DefaultValue) const
 {
 	FHTNProperty Value;
 	if (GetProperty(Key, Value) && Value.GetType() == EHTNPropertyType::Integer)
@@ -139,7 +139,7 @@ FORCEINLINE int32 IHTNWorldState::GetPropertyValue<int32>(FName Key, const int32
 }
 
 template<>
-FORCEINLINE float IHTNWorldState::GetPropertyValue<float>(FName Key, const float& DefaultValue) const
+FORCEINLINE float IHTNWorldStateInterface::GetPropertyValue<float>(FName Key, const float& DefaultValue) const
 {
 	FHTNProperty Value;
 	if (GetProperty(Key, Value) && Value.GetType() == EHTNPropertyType::Float)
@@ -150,7 +150,7 @@ FORCEINLINE float IHTNWorldState::GetPropertyValue<float>(FName Key, const float
 }
 
 template<>
-FORCEINLINE FString IHTNWorldState::GetPropertyValue<FString>(FName Key, const FString& DefaultValue) const
+FORCEINLINE FString IHTNWorldStateInterface::GetPropertyValue<FString>(FName Key, const FString& DefaultValue) const
 {
 	FHTNProperty Value;
 	if (GetProperty(Key, Value) && Value.GetType() == EHTNPropertyType::String)
@@ -161,7 +161,7 @@ FORCEINLINE FString IHTNWorldState::GetPropertyValue<FString>(FName Key, const F
 }
 
 template<>
-FORCEINLINE FName IHTNWorldState::GetPropertyValue<FName>(FName Key, const FName& DefaultValue) const
+FORCEINLINE FName IHTNWorldStateInterface::GetPropertyValue<FName>(FName Key, const FName& DefaultValue) const
 {
 	FHTNProperty Value;
 	if (GetProperty(Key, Value) && Value.GetType() == EHTNPropertyType::Name)
@@ -172,7 +172,7 @@ FORCEINLINE FName IHTNWorldState::GetPropertyValue<FName>(FName Key, const FName
 }
 
 template<>
-FORCEINLINE UObject* IHTNWorldState::GetPropertyValue<UObject*>(FName Key, UObject* const& DefaultValue) const
+FORCEINLINE UObject* IHTNWorldStateInterface::GetPropertyValue<UObject*>(FName Key, UObject* const& DefaultValue) const
 {
 	FHTNProperty Value;
 	if (GetProperty(Key, Value) && Value.GetType() == EHTNPropertyType::Object)
@@ -183,7 +183,7 @@ FORCEINLINE UObject* IHTNWorldState::GetPropertyValue<UObject*>(FName Key, UObje
 }
 
 template<>
-FORCEINLINE FVector IHTNWorldState::GetPropertyValue<FVector>(FName Key, const FVector& DefaultValue) const
+FORCEINLINE FVector IHTNWorldStateInterface::GetPropertyValue<FVector>(FName Key, const FVector& DefaultValue) const
 {
 	FHTNProperty Value;
 	if (GetProperty(Key, Value) && Value.GetType() == EHTNPropertyType::Vector)
@@ -194,43 +194,43 @@ FORCEINLINE FVector IHTNWorldState::GetPropertyValue<FVector>(FName Key, const F
 }
 
 template<>
-FORCEINLINE void IHTNWorldState::SetPropertyValue<bool>(FName Key, const bool& Value)
+FORCEINLINE void IHTNWorldStateInterface::SetPropertyValue<bool>(FName Key, const bool& Value)
 {
 	SetProperty(Key, FHTNProperty(Value));
 }
 
 template<>
-FORCEINLINE void IHTNWorldState::SetPropertyValue<int32>(FName Key, const int32& Value)
+FORCEINLINE void IHTNWorldStateInterface::SetPropertyValue<int32>(FName Key, const int32& Value)
 {
 	SetProperty(Key, FHTNProperty(Value));
 }
 
 template<>
-FORCEINLINE void IHTNWorldState::SetPropertyValue<float>(FName Key, const float& Value)
+FORCEINLINE void IHTNWorldStateInterface::SetPropertyValue<float>(FName Key, const float& Value)
 {
 	SetProperty(Key, FHTNProperty(Value));
 }
 
 template<>
-FORCEINLINE void IHTNWorldState::SetPropertyValue<FString>(FName Key, const FString& Value)
+FORCEINLINE void IHTNWorldStateInterface::SetPropertyValue<FString>(FName Key, const FString& Value)
 {
 	SetProperty(Key, FHTNProperty(Value));
 }
 
 template<>
-FORCEINLINE void IHTNWorldState::SetPropertyValue<FName>(FName Key, const FName& Value)
+FORCEINLINE void IHTNWorldStateInterface::SetPropertyValue<FName>(FName Key, const FName& Value)
 {
 	SetProperty(Key, FHTNProperty(Value));
 }
 
 template<>
-FORCEINLINE void IHTNWorldState::SetPropertyValue<UObject*>(FName Key, UObject* const& Value)
+FORCEINLINE void IHTNWorldStateInterface::SetPropertyValue<UObject*>(FName Key, UObject* const& Value)
 {
 	SetProperty(Key, FHTNProperty(Value));
 }
 
 template<>
-FORCEINLINE void IHTNWorldState::SetPropertyValue<FVector>(FName Key, const FVector& Value)
+FORCEINLINE void IHTNWorldStateInterface::SetPropertyValue<FVector>(FName Key, const FVector& Value)
 {
 	SetProperty(Key, FHTNProperty(Value));
 }

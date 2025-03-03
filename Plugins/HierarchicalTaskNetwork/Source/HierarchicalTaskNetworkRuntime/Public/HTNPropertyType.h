@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EHTNPropertyType.generated.h"
+#include "HTNPropertyType.generated.h"
 
 /**
  * Enumeration of property types that can be stored in an HTN world state.

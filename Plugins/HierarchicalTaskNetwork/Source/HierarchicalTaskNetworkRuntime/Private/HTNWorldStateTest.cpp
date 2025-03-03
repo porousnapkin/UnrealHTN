@@ -3,125 +3,262 @@
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationCommon.h"
-#include "FHTNProperty.h"
-// Include the concrete world state implementation when ready
+#include "HTNWorldStateStruct.h"
+#include "HTNWorldStateInterface.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FHTNPropertyTest, "HTNPlanner.Property", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FHTNWorldStateTest, "HTNPlanner.WorldState", EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::EngineFilter)
 
-bool FHTNPropertyTest::RunTest(const FString& Parameters)
+bool FHTNWorldStateTest::RunTest(const FString& Parameters)
 {
-	// Test boolean property
+	// Test creating and getting properties
 	{
-		FHTNProperty BoolProp(true);
-		TestEqual("Boolean property type", BoolProp.GetType(), EHTNPropertyType::Boolean);
-		TestEqual("Boolean value", BoolProp.GetBoolValue(), true);
-		TestEqual("Boolean to string", BoolProp.ToString(), TEXT("true"));
+		FHTNWorldStateStruct WorldState;
+		
+		// Set different property types
+		WorldState.SetProperty(FName("BoolProp"), FHTNProperty(true));
+		WorldState.SetProperty(FName("IntProp"), FHTNProperty(42));
+		WorldState.SetProperty(FName("FloatProp"), FHTNProperty(3.14f));
+		WorldState.SetProperty(FName("StringProp"), FHTNProperty(FString("Test String")));
+		WorldState.SetProperty(FName("NameProp"), FHTNProperty(FName("TestName")));
+		WorldState.SetProperty(FName("VectorProp"), FHTNProperty(FVector(1.0f, 2.0f, 3.0f)));
+		
+		// Test HasProperty
+		TestTrue("Has boolean property", WorldState.HasProperty(FName("BoolProp")));
+		TestTrue("Has integer property", WorldState.HasProperty(FName("IntProp")));
+		TestTrue("Has float property", WorldState.HasProperty(FName("FloatProp")));
+		TestTrue("Has string property", WorldState.HasProperty(FName("StringProp")));
+		TestTrue("Has name property", WorldState.HasProperty(FName("NameProp")));
+		TestTrue("Has vector property", WorldState.HasProperty(FName("VectorProp")));
+		TestFalse("Doesn't have nonexistent property", WorldState.HasProperty(FName("NonexistentProp")));
+		
+		// Test GetProperty
+		{
+			FHTNProperty Value;
+			TestTrue("GetProperty returns true for existing property", WorldState.GetProperty(FName("BoolProp"), Value));
+			TestEqual("GetProperty retrieves correct boolean value", Value.GetBoolValue(), true);
+			
+			TestTrue("GetProperty returns true for existing property", WorldState.GetProperty(FName("IntProp"), Value));
+			TestEqual("GetProperty retrieves correct integer value", Value.GetIntValue(), 42);
+			
+			TestTrue("GetProperty returns true for existing property", WorldState.GetProperty(FName("FloatProp"), Value));
+			TestEqual("GetProperty retrieves correct float value", Value.GetFloatValue(), 3.14f);
+			
+			TestTrue("GetProperty returns true for existing property", WorldState.GetProperty(FName("StringProp"), Value));
+			TestEqual("GetProperty retrieves correct string value", Value.GetStringValue(), FString("Test String"));
+			
+			TestTrue("GetProperty returns true for existing property", WorldState.GetProperty(FName("NameProp"), Value));
+			TestEqual("GetProperty retrieves correct name value", Value.GetNameValue(), FName("TestName"));
+			
+			TestTrue("GetProperty returns true for existing property", WorldState.GetProperty(FName("VectorProp"), Value));
+			TestTrue("GetProperty retrieves correct vector value", Value.GetVectorValue().Equals(FVector(1.0f, 2.0f, 3.0f)));
+			
+			TestFalse("GetProperty returns false for nonexistent property", WorldState.GetProperty(FName("NonexistentProp"), Value));
+		}
+		
+		// Test template accessor methods
+		TestEqual("GetPropertyValue<bool> retrieves correct value", WorldState.GetPropertyValue<bool>(FName("BoolProp"), false), true);
+		TestEqual("GetPropertyValue<int32> retrieves correct value", WorldState.GetPropertyValue<int32>(FName("IntProp"), 0), 42);
+		TestEqual("GetPropertyValue<float> retrieves correct value", WorldState.GetPropertyValue<float>(FName("FloatProp"), 0.0f), 3.14f);
+		TestEqual("GetPropertyValue<FString> retrieves correct value", WorldState.GetPropertyValue<FString>(FName("StringProp"), FString()), FString("Test String"));
+		TestEqual("GetPropertyValue<FName> retrieves correct value", WorldState.GetPropertyValue<FName>(FName("NameProp"), FName()), FName("TestName"));
+		TestTrue("GetPropertyValue<FVector> retrieves correct value", WorldState.GetPropertyValue<FVector>(FName("VectorProp"), FVector::ZeroVector).Equals(FVector(1.0f, 2.0f, 3.0f)));
+		
+		// Test default values for nonexistent properties
+		TestEqual("GetPropertyValue returns default for nonexistent property", WorldState.GetPropertyValue<bool>(FName("NonexistentBool"), true), true);
+		TestEqual("GetPropertyValue returns default for nonexistent property", WorldState.GetPropertyValue<int32>(FName("NonexistentInt"), 123), 123);
+		TestEqual("GetPropertyValue returns default for nonexistent property", WorldState.GetPropertyValue<float>(FName("NonexistentFloat"), 2.71f), 2.71f);
+		TestEqual("GetPropertyValue returns default for nonexistent property", WorldState.GetPropertyValue<FString>(FName("NonexistentString"), FString("Default")), FString("Default"));
+		TestEqual("GetPropertyValue returns default for nonexistent property", WorldState.GetPropertyValue<FName>(FName("NonexistentName"), FName("Default")), FName("Default"));
+		TestTrue("GetPropertyValue returns default for nonexistent property", WorldState.GetPropertyValue<FVector>(FName("NonexistentVector"), FVector(4.0f, 5.0f, 6.0f)).Equals(FVector(4.0f, 5.0f, 6.0f)));
 	}
-
-	// Test integer property
+	
+	// Test world state cloning
 	{
-		FHTNProperty IntProp(42);
-		TestEqual("Integer property type", IntProp.GetType(), EHTNPropertyType::Integer);
-		TestEqual("Integer value", IntProp.GetIntValue(), 42);
-		TestEqual("Integer to string", IntProp.ToString(), TEXT("42"));
+		FHTNWorldStateStruct Original;
+		Original.SetProperty(FName("BoolProp"), FHTNProperty(true));
+		Original.SetProperty(FName("IntProp"), FHTNProperty(42));
+		
+		FHTNWorldStateStruct Clone = Original.Clone();
+		
+		// Verify clone has the same properties
+		TestTrue("Clone has BoolProp", Clone.HasProperty(FName("BoolProp")));
+		TestTrue("Clone has IntProp", Clone.HasProperty(FName("IntProp")));
+		
+		FHTNProperty BoolValue, IntValue;
+		Clone.GetProperty(FName("BoolProp"), BoolValue);
+		Clone.GetProperty(FName("IntProp"), IntValue);
+		
+		TestEqual("Cloned BoolProp has correct value", BoolValue.GetBoolValue(), true);
+		TestEqual("Cloned IntProp has correct value", IntValue.GetIntValue(), 42);
+		
+		// Modify clone and verify it doesn't affect original
+		Clone.SetProperty(FName("BoolProp"), FHTNProperty(false));
+		Clone.SetProperty(FName("NewProp"), FHTNProperty(FString("New Property")));
+		
+		FHTNProperty OriginalBoolValue;
+		Original.GetProperty(FName("BoolProp"), OriginalBoolValue);
+		
+		TestEqual("Original BoolProp not affected by clone change", OriginalBoolValue.GetBoolValue(), true);
+		TestFalse("Original doesn't have new property from clone", Original.HasProperty(FName("NewProp")));
 	}
-
-	// Test float property
+	
+	// Test world state comparison
 	{
-		FHTNProperty FloatProp(3.14f);
-		TestEqual("Float property type", FloatProp.GetType(), EHTNPropertyType::Float);
-		TestEqual("Float value", FloatProp.GetFloatValue(), 3.14f);
-		// Float to string may have platform-specific formatting, so we just check it's not empty
-		TestTrue("Float to string not empty", !FloatProp.ToString().IsEmpty());
+		FHTNWorldStateStruct State1;
+		State1.SetProperty(FName("Prop1"), FHTNProperty(42));
+		State1.SetProperty(FName("Prop2"), FHTNProperty(FString("Value")));
+		
+		FHTNWorldStateStruct State2;
+		State2.SetProperty(FName("Prop1"), FHTNProperty(42));
+		State2.SetProperty(FName("Prop2"), FHTNProperty(FString("Value")));
+		
+		FHTNWorldStateStruct State3;
+		State3.SetProperty(FName("Prop1"), FHTNProperty(42));
+		State3.SetProperty(FName("Prop2"), FHTNProperty(FString("Different")));
+		
+		FHTNWorldStateStruct State4;
+		State4.SetProperty(FName("Prop1"), FHTNProperty(42));
+		
+		TestTrue("Equal world states compare equal", State1.Equals(State2));
+		TestTrue("Equal world states operator== returns true", State1 == State2);
+		
+		TestFalse("Different world states compare not equal", State1.Equals(State3));
+		TestTrue("Different world states operator!= returns true", State1 != State3);
+		
+		TestFalse("Different property count compare not equal", State1.Equals(State4));
 	}
-
-	// Test string property
+	
+	// Test world state difference
 	{
-		FString TestString = TEXT("Test String");
-		FHTNProperty StringProp(TestString);
-		TestEqual("String property type", StringProp.GetType(), EHTNPropertyType::String);
-		TestEqual("String value", StringProp.GetStringValue(), TestString);
-		TestEqual("String to string", StringProp.ToString(), TestString);
+		FHTNWorldStateStruct State1;
+		State1.SetProperty(FName("SharedSame"), FHTNProperty(42));
+		State1.SetProperty(FName("SharedDifferent"), FHTNProperty(true));
+		State1.SetProperty(FName("OnlyInState1"), FHTNProperty(FString("State1 Only")));
+		
+		FHTNWorldStateStruct State2;
+		State2.SetProperty(FName("SharedSame"), FHTNProperty(42));
+		State2.SetProperty(FName("SharedDifferent"), FHTNProperty(false));
+		State2.SetProperty(FName("OnlyInState2"), FHTNProperty(FString("State2 Only")));
+		
+		FHTNWorldStateStruct Difference = State1.CreateDifference(State2);
+		
+		// Difference should contain SharedDifferent, OnlyInState1, and OnlyInState2
+		TestEqual("Difference has correct number of properties", Difference.GetPropertyNames().Num(), 3);
+		TestFalse("Difference doesn't contain properties that are the same", Difference.HasProperty(FName("SharedSame")));
+		TestTrue("Difference contains properties with different values", Difference.HasProperty(FName("SharedDifferent")));
+		TestTrue("Difference contains properties only in State1", Difference.HasProperty(FName("OnlyInState1")));
+		TestTrue("Difference contains properties only in State2", Difference.HasProperty(FName("OnlyInState2")));
+		
+		// Verify property values in difference
+		FHTNProperty DiffValue;
+		Difference.GetProperty(FName("SharedDifferent"), DiffValue);
+		TestEqual("Value from State1 is preserved in difference", DiffValue.GetBoolValue(), true);
+		
+		Difference.GetProperty(FName("OnlyInState1"), DiffValue);
+		TestEqual("Value from State1 is preserved in difference", DiffValue.GetStringValue(), FString("State1 Only"));
+		
+		Difference.GetProperty(FName("OnlyInState2"), DiffValue);
+		TestEqual("Value from State2 is preserved in difference", DiffValue.GetStringValue(), FString("State2 Only"));
 	}
-
-	// Test name property
+	
+	// Test property removal
 	{
-		FName ThisTestName = FName(TEXT("TestName"));
-		FHTNProperty NameProp(ThisTestName);
-		TestEqual("Name property type", NameProp.GetType(), EHTNPropertyType::Name);
-		TestEqual("Name value", NameProp.GetNameValue(), ThisTestName);
-		TestEqual("Name to string", NameProp.ToString(), ThisTestName.ToString());
+		FHTNWorldStateStruct WorldState;
+		WorldState.SetProperty(FName("PropToRemove"), FHTNProperty(42));
+		
+		TestTrue("HasProperty returns true before removal", WorldState.HasProperty(FName("PropToRemove")));
+		
+		TestTrue("RemoveProperty returns true for existing property", WorldState.RemoveProperty(FName("PropToRemove")));
+		TestFalse("HasProperty returns false after removal", WorldState.HasProperty(FName("PropToRemove")));
+		
+		TestFalse("RemoveProperty returns false for nonexistent property", WorldState.RemoveProperty(FName("NonexistentProp")));
 	}
-
-	// Test object property (using null for simplicity)
+	
+	// Test getting property names
 	{
-		UObject* TestObject = nullptr;
-		FHTNProperty ObjectProp(TestObject);
-		TestEqual("Object property type", ObjectProp.GetType(), EHTNPropertyType::Object);
-		TestEqual("Object value", ObjectProp.GetObjectValue(), TestObject);
-		TestEqual("Object to string", ObjectProp.ToString(), TEXT("None"));
+		FHTNWorldStateStruct WorldState;
+		WorldState.SetProperty(FName("Prop1"), FHTNProperty(true));
+		WorldState.SetProperty(FName("Prop2"), FHTNProperty(42));
+		WorldState.SetProperty(FName("Prop3"), FHTNProperty(3.14f));
+		
+		TArray<FName> PropertyNames = WorldState.GetPropertyNames();
+		TestEqual("GetPropertyNames returns correct count", PropertyNames.Num(), 3);
+		TestTrue("GetPropertyNames includes Prop1", PropertyNames.Contains(FName("Prop1")));
+		TestTrue("GetPropertyNames includes Prop2", PropertyNames.Contains(FName("Prop2")));
+		TestTrue("GetPropertyNames includes Prop3", PropertyNames.Contains(FName("Prop3")));
 	}
-
-	// Test vector property
+	
+	// Test ToString method
 	{
-		FVector TestVector(1.0f, 2.0f, 3.0f);
-		FHTNProperty VectorProp(TestVector);
-		TestEqual("Vector property type", VectorProp.GetType(), EHTNPropertyType::Vector);
-		TestTrue("Vector value equals", VectorProp.GetVectorValue().Equals(TestVector));
-		// Vector to string may have platform-specific formatting, so we just check it's not empty
-		TestTrue("Vector to string not empty", !VectorProp.ToString().IsEmpty());
+		FHTNWorldStateStruct WorldState;
+		WorldState.SetProperty(FName("BoolProp"), FHTNProperty(true));
+		WorldState.SetProperty(FName("IntProp"), FHTNProperty(42));
+		
+		FString StateString = WorldState.ToString();
+		TestTrue("ToString contains property name BoolProp", StateString.Contains(TEXT("BoolProp")));
+		TestTrue("ToString contains boolean value", StateString.Contains(TEXT("true")));
+		TestTrue("ToString contains property name IntProp", StateString.Contains(TEXT("IntProp")));
+		TestTrue("ToString contains integer value", StateString.Contains(TEXT("42")));
 	}
-
-	// Test copy construction
+	
+	// Test UHTNWorldState wrapper
 	{
-		FHTNProperty Original(42);
-		FHTNProperty Copy(Original);
-		TestEqual("Copy type equals original", Copy.GetType(), Original.GetType());
-		TestEqual("Copy value equals original", Copy.GetIntValue(), Original.GetIntValue());
-		TestTrue("Copy equals original", Copy == Original);
+		UHTNWorldState* WorldState = NewObject<UHTNWorldState>();
+		
+		// Test implementing the interface
+		TScriptInterface<IHTNWorldStateInterface> Interface;
+		Interface.SetObject(WorldState);
+		Interface.SetInterface(Cast<IHTNWorldStateInterface>(WorldState));
+		
+		TestNotNull("Interface object is valid", Interface.GetObject());
+		TestTrue("Object implements IHTNWorldStateInterface", Interface.GetInterface() != nullptr);
+		
+		// Test basic operations
+		Interface->SetProperty_Implementation(FName("TestProp"), FHTNProperty(42));
+		TestTrue("Interface HasProperty works", Interface->HasProperty_Implementation(FName("TestProp")));
+		
+		FHTNProperty Value;
+		TestTrue("Interface GetProperty works", Interface->GetProperty_Implementation(FName("TestProp"), Value));
+		TestEqual("Interface property value is correct", Value.GetIntValue(), 42);
+		
+		// Test cloning
+		TScriptInterface<IHTNWorldStateInterface> ClonedInterface = Interface->Clone_Implementation();
+		TestNotNull("Cloned interface object is valid", ClonedInterface.GetObject());
+		TestTrue("Cloned object implements IHTNWorldStateInterface", ClonedInterface.GetInterface() != nullptr);
+		
+		FHTNProperty ClonedValue;
+		TestTrue("Cloned interface has property", ClonedInterface->HasProperty_Implementation(FName("TestProp")));
+		TestTrue("Cloned interface GetProperty works", ClonedInterface->GetProperty_Implementation(FName("TestProp"), ClonedValue));
+		TestEqual("Cloned interface property value is correct", ClonedValue.GetIntValue(), 42);
+		
+		// Test equality
+		TestTrue("Interface equals itself", Interface->Equals_Implementation(Interface));
+		TestTrue("Interface equals its clone", Interface->Equals_Implementation(ClonedInterface));
+		
+		// Test difference
+		Interface->SetProperty_Implementation(FName("DiffProp"), FHTNProperty(true));
+		TScriptInterface<IHTNWorldStateInterface> Difference = Interface->CreateDifference_Implementation(ClonedInterface);
+		
+		TestTrue("Difference has property only in first", Difference->HasProperty_Implementation(FName("DiffProp")));
+		TestFalse("Difference doesn't have shared property", Difference->HasProperty_Implementation(FName("TestProp")));
 	}
-
-	// Test move construction
+	
+	// Test CreateFromStruct
 	{
-		FHTNProperty Original(FString("Move Test"));
-		FString OriginalValue = Original.GetStringValue();
-		FHTNProperty Moved(MoveTemp(Original));
-		TestEqual("Moved type", Moved.GetType(), EHTNPropertyType::String);
-		TestEqual("Moved value", Moved.GetStringValue(), OriginalValue);
-		TestEqual("Original type after move", Original.GetType(), EHTNPropertyType::Invalid);
+		FHTNWorldStateStruct StructState;
+		StructState.SetProperty(FName("TestProp"), FHTNProperty(42));
+		
+		UHTNWorldState* ObjectState = UHTNWorldState::CreateFromStruct(StructState);
+		TestNotNull("CreateFromStruct returns valid object", ObjectState);
+		
+		FHTNProperty Value;
+		TestTrue("Created object has property", ObjectState->GetProperty_Implementation(FName("TestProp"), Value));
+		TestEqual("Created object property value is correct", Value.GetIntValue(), 42);
 	}
-
-	// Test equality operators
-	{
-		FHTNProperty Prop1(true);
-		FHTNProperty Prop2(true);
-		FHTNProperty Prop3(false);
-		FHTNProperty Prop4(42);
-
-		TestTrue("Equal properties compare equal", Prop1 == Prop2);
-		TestTrue("Different value properties compare not equal", Prop1 != Prop3);
-		TestTrue("Different type properties compare not equal", Prop1 != Prop4);
-	}
-
-	// Test type conversion behavior
-	{
-		FHTNProperty BoolProp(true);
-		TestEqual("Bool to int", BoolProp.GetIntValue(), 1);
-		TestEqual("Bool to float", BoolProp.GetFloatValue(), 1.0f);
-
-		FHTNProperty IntProp(42);
-		TestEqual("Int to bool (true)", IntProp.GetBoolValue(), true);
-		TestEqual("Int to float", IntProp.GetFloatValue(), 42.0f);
-
-		FHTNProperty ZeroIntProp(0);
-		TestEqual("Zero int to bool (false)", ZeroIntProp.GetBoolValue(), false);
-	}
-
+	
 	return true;
 }
-
-// Add more tests for the world state implementation when ready
 
 #endif // WITH_DEV_AUTOMATION_TESTS

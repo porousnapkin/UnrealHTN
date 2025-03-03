@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EHTNPropertyType.h"
-#include "FHTNProperty.generated.h"
+#include "HTNPropertyType.h"
+#include "HTNProperty.generated.h"
 
 /**
  * Structure that can hold any property type supported by the HTN planner.
