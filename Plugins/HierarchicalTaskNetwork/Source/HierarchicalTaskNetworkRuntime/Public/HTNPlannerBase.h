@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Interface.h"
+#include "UObject/NoExportTypes.h"
 #include "HTNTask.h"
 #include "HTNPrimitiveTask.h"
-#include "HTNPlannerInterface.generated.h"
+#include "HTNPlannerBase.generated.h"
 
 /**
  * Enum defining the possible reasons a planning operation might fail
@@ -274,20 +274,18 @@ public:
 };
 
 /**
- * Interface for HTN planners.
- * Defines the methods that all HTN planner implementations must provide.
+ * Base class for HTN planners.
+ * Provides the foundation for different HTN planner implementations.
  */
-UINTERFACE(MinimalAPI, Blueprintable)
-class UHTNPlannerInterface : public UInterface
-{
-    GENERATED_BODY()
-};
-
-class HIERARCHICALTASKNETWORKRUNTIME_API IHTNPlannerInterface
+UCLASS(Abstract, BlueprintType, Blueprintable)
+class HIERARCHICALTASKNETWORKRUNTIME_API UHTNPlannerBase : public UObject
 {
     GENERATED_BODY()
 
 public:
+    UHTNPlannerBase();
+    virtual ~UHTNPlannerBase();
+    
     /**
      * Generate a plan to achieve the specified goal tasks from the given world state.
      * 
@@ -296,8 +294,8 @@ public:
      * @param Config - Configuration parameters for the planning process
      * @return The result of the planning operation
      */
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HTN|Planner")
-    FHTNPlannerResult GeneratePlan(
+    UFUNCTION(BlueprintCallable, Category = "HTN|Planner", meta = (DisplayName = "Generate Plan"))
+    virtual FHTNPlannerResult GeneratePlan(
         const UHTNWorldState* WorldState,
         const TArray<UHTNTask*>& GoalTasks,
         const FHTNPlanningConfig& Config);
@@ -309,8 +307,8 @@ public:
      * @param WorldState - The current world state
      * @return True if the plan is still valid, false otherwise
      */
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HTN|Planner")
-    bool ValidatePlan(
+    UFUNCTION(BlueprintCallable, Category = "HTN|Planner", meta = (DisplayName = "Validate Plan"))
+    virtual bool ValidatePlan(
         const FHTNPlan& Plan,
         const UHTNWorldState* WorldState);
     
@@ -324,8 +322,8 @@ public:
      * @param Config - Configuration parameters for the planning process
      * @return The result of the planning operation
      */
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HTN|Planner")
-    FHTNPlannerResult GeneratePartialPlan(
+    UFUNCTION(BlueprintCallable, Category = "HTN|Planner", meta = (DisplayName = "Generate Partial Plan"))
+    virtual FHTNPlannerResult GeneratePartialPlan(
         const FHTNPlan& ExistingPlan,
         const UHTNWorldState* WorldState,
         const TArray<UHTNTask*>& GoalTasks,
@@ -337,6 +335,11 @@ public:
      * 
      * @param NewConfig - The new configuration parameters
      */
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HTN|Planner")
-    void ConfigurePlanner(const FHTNPlanningConfig& NewConfig);
+    UFUNCTION(BlueprintCallable, Category = "HTN|Planner", meta = (DisplayName = "Configure Planner"))
+    virtual void ConfigurePlanner(const FHTNPlanningConfig& NewConfig);
+
+protected:
+    /** Current configuration for the planner */
+    UPROPERTY()
+    FHTNPlanningConfig Configuration;
 };

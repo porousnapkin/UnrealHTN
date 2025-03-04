@@ -3,10 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
-#include "HTNPlannerInterface.h"
+#include "HTNPlannerBase.h"
 #include "HTNTask.h"
-#include "HTNCompoundTask.h"
 #include "HTNPrimitiveTask.h"
 #include "HTNDFSPlanner.generated.h"
 
@@ -16,7 +14,7 @@
  * to generate valid plans.
  */
 UCLASS(Blueprintable)
-class HIERARCHICALTASKNETWORKRUNTIME_API UHTNDFSPlanner : public UObject, public IHTNPlannerInterface
+class HIERARCHICALTASKNETWORKRUNTIME_API UHTNDFSPlanner : public UHTNPlannerBase
 {
     GENERATED_BODY()
 
@@ -25,29 +23,25 @@ public:
     virtual ~UHTNDFSPlanner();
 
     //~ Begin IHTNPlannerInterface
-    virtual FHTNPlannerResult GeneratePlan_Implementation(
+    virtual FHTNPlannerResult GeneratePlan(
         const UHTNWorldState* WorldState,
         const TArray<UHTNTask*>& GoalTasks,
         const FHTNPlanningConfig& Config) override;
 
-    virtual bool ValidatePlan_Implementation(
+    virtual bool ValidatePlan(
         const FHTNPlan& Plan,
         const UHTNWorldState* WorldState) override;
 
-    virtual FHTNPlannerResult GeneratePartialPlan_Implementation(
+    virtual FHTNPlannerResult GeneratePartialPlan(
         const FHTNPlan& ExistingPlan,
         const UHTNWorldState* WorldState,
         const TArray<UHTNTask*>& GoalTasks,
         const FHTNPlanningConfig& Config) override;
 
-    virtual void ConfigurePlanner_Implementation(const FHTNPlanningConfig& NewConfig) override;
+    virtual void ConfigurePlanner(const FHTNPlanningConfig& NewConfig) override;
     //~ End IHTNPlannerInterface
 
 protected:
-    /** Current configuration for the planner */
-    UPROPERTY()
-    FHTNPlanningConfig Configuration;
-
     /** Planning metrics for the most recent planning operation */
     struct FPlanningMetrics
     {

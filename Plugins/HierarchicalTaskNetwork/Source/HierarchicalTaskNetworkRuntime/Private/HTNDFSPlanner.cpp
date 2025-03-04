@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "HTNDFSPlanner.h"
+
+#include "HTNCompoundTask.h"
 #include "HTNLogging.h"
 #include "HTNWorldStateStruct.h"
 
@@ -15,7 +17,7 @@ UHTNDFSPlanner::~UHTNDFSPlanner()
     // No specific cleanup needed
 }
 
-FHTNPlannerResult UHTNDFSPlanner::GeneratePlan_Implementation(
+FHTNPlannerResult UHTNDFSPlanner::GeneratePlan(
     const UHTNWorldState* WorldState,
     const TArray<UHTNTask*>& GoalTasks,
     const FHTNPlanningConfig& Config)
@@ -100,7 +102,7 @@ FHTNPlannerResult UHTNDFSPlanner::GeneratePlan_Implementation(
     }
 }
 
-bool UHTNDFSPlanner::ValidatePlan_Implementation(
+bool UHTNDFSPlanner::ValidatePlan(
     const FHTNPlan& Plan,
     const UHTNWorldState* WorldState)
 {
@@ -149,7 +151,7 @@ bool UHTNDFSPlanner::ValidatePlan_Implementation(
     return true;
 }
 
-FHTNPlannerResult UHTNDFSPlanner::GeneratePartialPlan_Implementation(
+FHTNPlannerResult UHTNDFSPlanner::GeneratePartialPlan(
     const FHTNPlan& ExistingPlan,
     const UHTNWorldState* WorldState,
     const TArray<UHTNTask*>& GoalTasks,
@@ -244,7 +246,7 @@ FHTNPlannerResult UHTNDFSPlanner::GeneratePartialPlan_Implementation(
     }
 }
 
-void UHTNDFSPlanner::ConfigurePlanner_Implementation(const FHTNPlanningConfig& NewConfig)
+void UHTNDFSPlanner::ConfigurePlanner(const FHTNPlanningConfig& NewConfig)
 {
     Configuration = NewConfig;
     

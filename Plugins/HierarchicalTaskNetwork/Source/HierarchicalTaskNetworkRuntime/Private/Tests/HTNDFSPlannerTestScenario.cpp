@@ -164,7 +164,7 @@ bool FHTNDFSPlannerTest::RunTest(const FString& Parameters)
     GoalTasks.Add(SimpleGoalTask);
     
     // Generate a simple plan (will likely fail, but lets us test the planner is working)
-    FHTNPlannerResult PlanResult = IHTNPlannerInterface::Execute_GeneratePlan(Planner, WorldState, GoalTasks, PlanConfig);
+    FHTNPlannerResult PlanResult = Planner->GeneratePlan(WorldState, GoalTasks, PlanConfig);
     
     UE_LOG(LogTemp, Display, TEXT("Planner test run completed."));
     

@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "HTNPlannerInterface.h"
-#include "HTNPlanner.h"
+#include "HTNPlannerBase.h"
 #include "HTNLogging.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
@@ -395,4 +394,64 @@ FHTNPlanningConfig::FHTNPlanningConfig()
     , bCacheDecompositions(true)
     , bDetailedDebugging(false)
 {
+}
+
+UHTNPlannerBase::UHTNPlannerBase()
+{
+    // Initialize with default configuration
+    Configuration = FHTNPlanningConfig();
+}
+
+UHTNPlannerBase::~UHTNPlannerBase()
+{
+    // No specific cleanup needed
+}
+
+FHTNPlannerResult UHTNPlannerBase::GeneratePlan(
+    const UHTNWorldState* WorldState,
+    const TArray<UHTNTask*>& GoalTasks,
+    const FHTNPlanningConfig& Config)
+{
+    // Base implementation just returns a failed result
+    UE_LOG(LogHTNPlannerPlugin, Warning, TEXT("GeneratePlan called on base planner class. This should be overridden by derived classes."));
+    
+    FHTNPlannerResult Result;
+    Result.bSuccess = false;
+    Result.FailReason = EHTNPlannerFailReason::UnexpectedError;
+    
+    return Result;
+}
+
+bool UHTNPlannerBase::ValidatePlan(
+    const FHTNPlan& Plan,
+    const UHTNWorldState* WorldState)
+{
+    // Base implementation just returns false
+    UE_LOG(LogHTNPlannerPlugin, Warning, TEXT("ValidatePlan called on base planner class. This should be overridden by derived classes."));
+    return false;
+}
+
+FHTNPlannerResult UHTNPlannerBase::GeneratePartialPlan(
+    const FHTNPlan& ExistingPlan,
+    const UHTNWorldState* WorldState,
+    const TArray<UHTNTask*>& GoalTasks,
+    const FHTNPlanningConfig& Config)
+{
+    // Base implementation just returns a failed result
+    UE_LOG(LogHTNPlannerPlugin, Warning, TEXT("GeneratePartialPlan called on base planner class. This should be overridden by derived classes."));
+    
+    FHTNPlannerResult Result;
+    Result.bSuccess = false;
+    Result.FailReason = EHTNPlannerFailReason::UnexpectedError;
+    
+    return Result;
+}
+
+void UHTNPlannerBase::ConfigurePlanner(const FHTNPlanningConfig& NewConfig)
+{
+    // Update configuration
+    Configuration = NewConfig;
+    
+    UE_LOG(LogHTNPlannerPlugin, Verbose, TEXT("Planner configured with MaxSearchDepth=%d, Timeout=%.2fs"), 
+        Configuration.MaxSearchDepth, Configuration.PlanningTimeout);
 }
