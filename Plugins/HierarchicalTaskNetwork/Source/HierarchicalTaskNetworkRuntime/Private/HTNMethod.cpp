@@ -2,7 +2,6 @@
 
 #include "HTNMethod.h"
 #include "HTNTask.h"
-#include "HTNTaskInterface.h"
 
 UHTNMethod::UHTNMethod()
     : Priority(1.0f)
@@ -14,7 +13,7 @@ UHTNMethod::UHTNMethod()
     }
 }
 
-bool UHTNMethod::IsApplicable_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState) const
+bool UHTNMethod::IsApplicable_Implementation(const UHTNWorldState* WorldState) const
 {
     // Check all conditions
     for (const UHTNCondition* Condition : Conditions)

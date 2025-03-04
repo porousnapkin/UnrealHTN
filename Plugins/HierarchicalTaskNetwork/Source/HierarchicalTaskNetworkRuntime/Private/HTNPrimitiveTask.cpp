@@ -2,6 +2,8 @@
 
 #include "HTNPrimitiveTask.h"
 
+#include "HTNWorldStateStruct.h"
+
 UHTNPrimitiveTask::UHTNPrimitiveTask()
     : Super()
     , Status(EHTNTaskStatus::Invalid)
@@ -18,7 +20,7 @@ void UHTNPrimitiveTask::PostInitProperties()
     // Initialize any properties specific to primitive tasks
 }
 
-bool UHTNPrimitiveTask::IsApplicable_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState) const
+bool UHTNPrimitiveTask::IsApplicable(const UHTNWorldState* WorldState) const
 {
     // Check all preconditions
     for (const UHTNCondition* Condition : Preconditions)
@@ -34,10 +36,10 @@ bool UHTNPrimitiveTask::IsApplicable_Implementation(const TScriptInterface<IHTNW
     return true;
 }
 
-void UHTNPrimitiveTask::GetExpectedEffects_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState, TScriptInterface<IHTNWorldStateInterface>& OutEffects) const
+UHTNWorldState* UHTNPrimitiveTask::GetExpectedEffects(const UHTNWorldState* WorldState) const
 {
     // Create a copy of the world state to represent the expected effects
-    OutEffects = WorldState->Clone();
+    UHTNWorldState* OutEffects = WorldState->Clone();
 
     // Apply all effects
     for (const UHTNEffect* Effect : Effects)
@@ -47,16 +49,18 @@ void UHTNPrimitiveTask::GetExpectedEffects_Implementation(const TScriptInterface
             Effect->ApplyEffect(OutEffects);
         }
     }
+
+    return OutEffects;
 }
 
-bool UHTNPrimitiveTask::Decompose_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState, TArray<UHTNPrimitiveTask*>& OutTasks)
+bool UHTNPrimitiveTask::Decompose(const UHTNWorldState* WorldState, TArray<UHTNPrimitiveTask*>& OutTasks)
 {
     // Primitive tasks don't decompose further - they just return themselves
     OutTasks.Add(this);
     return true;
 }
 
-bool UHTNPrimitiveTask::Execute_Implementation(TScriptInterface<IHTNWorldStateInterface>& WorldState)
+bool UHTNPrimitiveTask::Execute(UHTNWorldState* WorldState)
 {
     // Can't execute if already executing
     if (bIsExecuting)
@@ -66,7 +70,7 @@ bool UHTNPrimitiveTask::Execute_Implementation(TScriptInterface<IHTNWorldStateIn
     }
 
     // Check if the task is applicable in the current world state
-    if (!IHTNTaskInterface::Execute_IsApplicable(this, WorldState))
+    if (!IsApplicable(WorldState))
     {
         UE_LOG(LogHTNTask, Warning, TEXT("Task is not applicable in the current world state: %s"), *ToString());
         SetStatus(EHTNTaskStatus::Failed);
@@ -97,25 +101,25 @@ bool UHTNPrimitiveTask::Execute_Implementation(TScriptInterface<IHTNWorldStateIn
     return true;
 }
 
-bool UHTNPrimitiveTask::IsComplete_Implementation() const
+bool UHTNPrimitiveTask::IsComplete() const
 {
     // The task is complete if it's not in progress
     return Status != EHTNTaskStatus::InProgress;
 }
 
-EHTNTaskStatus UHTNPrimitiveTask::GetStatus_Implementation() const
+EHTNTaskStatus UHTNPrimitiveTask::GetStatus() const
 {
     return Status;
 }
 
-EHTNTaskStatus UHTNPrimitiveTask::ExecuteTask_Implementation(TScriptInterface<IHTNWorldStateInterface>& WorldState)
+EHTNTaskStatus UHTNPrimitiveTask::ExecuteTask_Implementation(UHTNWorldState* WorldState)
 {
     // Base implementation does nothing and succeeds immediately
     UE_LOG(LogHTNTask, Verbose, TEXT("ExecuteTask not implemented for primitive task: %s - using default success behavior"), *ToString());
     return EHTNTaskStatus::Succeeded;
 }
 
-EHTNTaskStatus UHTNPrimitiveTask::TickTask_Implementation(TScriptInterface<IHTNWorldStateInterface>& WorldState, float DeltaTime)
+EHTNTaskStatus UHTNPrimitiveTask::TickTask_Implementation(UHTNWorldState* WorldState, float DeltaTime)
 {
     // Base implementation just maintains the current status
     // For tasks that execute over time, this should be overridden to update the task's state
@@ -137,7 +141,7 @@ EHTNTaskStatus UHTNPrimitiveTask::TickTask_Implementation(TScriptInterface<IHTNW
     return Status;
 }
 
-void UHTNPrimitiveTask::EndTask_Implementation(TScriptInterface<IHTNWorldStateInterface>& WorldState, EHTNTaskStatus FinalStatus)
+void UHTNPrimitiveTask::EndTask_Implementation(UHTNWorldState* WorldState, EHTNTaskStatus FinalStatus)
 {
     // Base implementation does nothing
     // Derived classes should override this to perform cleanup
@@ -149,7 +153,7 @@ void UHTNPrimitiveTask::EndTask_Implementation(TScriptInterface<IHTNWorldStateIn
     }
 }
 
-void UHTNPrimitiveTask::AbortTask(TScriptInterface<IHTNWorldStateInterface>& WorldState)
+void UHTNPrimitiveTask::AbortTask(UHTNWorldState* WorldState)
 {
     // Only abort if the task is executing
     if (bIsExecuting)
@@ -167,7 +171,7 @@ void UHTNPrimitiveTask::AbortTask(TScriptInterface<IHTNWorldStateInterface>& Wor
     }
 }
 
-void UHTNPrimitiveTask::ApplyEffects(TScriptInterface<IHTNWorldStateInterface>& WorldState) const
+void UHTNPrimitiveTask::ApplyEffects(UHTNWorldState* WorldState) const
 {
     // Apply all effects to the world state
     for (const UHTNEffect* Effect : Effects)

@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "HTNWorldStateInterface.h"
 #include "HTNCondition.h"
 #include "HTNMethod.generated.h"
 
@@ -29,8 +28,8 @@ public:
      * @return True if the method is applicable, false otherwise
      */
     UFUNCTION(BlueprintNativeEvent, Category = "HTN|Method")
-    bool IsApplicable(const TScriptInterface<IHTNWorldStateInterface>& WorldState) const;
-    virtual bool IsApplicable_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState) const;
+    bool IsApplicable(const UHTNWorldState* WorldState) const;
+    virtual bool IsApplicable_Implementation(const UHTNWorldState* WorldState) const;
 
     /**
      * Gets the subtasks this method provides for decomposition.
@@ -69,8 +68,7 @@ public:
     /** Priority of this method (higher values are tried first) */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Method", meta = (ClampMin = "0.0"))
     float Priority;
-
-protected:
+ 
     /** Conditions that must be satisfied for this method to be applicable */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Method|Conditions")
     TArray<UHTNCondition*> Conditions;

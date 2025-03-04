@@ -7,7 +7,7 @@ UHTNCondition::UHTNCondition()
 	// Will be expanded with full implementation later
 }
 
-bool UHTNCondition::CheckCondition_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState) const
+bool UHTNCondition::CheckCondition_Implementation(const UHTNWorldState* WorldState) const
 {
 	// Base implementation - to be overridden by derived classes
 	return true;

@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "HTNPlannerInterface.h"
-#include "HTNWorldStateInterface.h"
 #include "HTNTask.h"
 #include "HTNCompoundTask.h"
 #include "HTNPrimitiveTask.h"
@@ -27,17 +26,17 @@ public:
 
     //~ Begin IHTNPlannerInterface
     virtual FHTNPlannerResult GeneratePlan_Implementation(
-        const TScriptInterface<IHTNWorldStateInterface>& WorldState,
+        const UHTNWorldState* WorldState,
         const TArray<UHTNTask*>& GoalTasks,
         const FHTNPlanningConfig& Config) override;
 
     virtual bool ValidatePlan_Implementation(
         const FHTNPlan& Plan,
-        const TScriptInterface<IHTNWorldStateInterface>& WorldState) override;
+        const UHTNWorldState* WorldState) override;
 
     virtual FHTNPlannerResult GeneratePartialPlan_Implementation(
         const FHTNPlan& ExistingPlan,
-        const TScriptInterface<IHTNWorldStateInterface>& WorldState,
+        const UHTNWorldState* WorldState,
         const TArray<UHTNTask*>& GoalTasks,
         const FHTNPlanningConfig& Config) override;
 
@@ -112,7 +111,7 @@ protected:
      * @return True if a valid plan was found, false otherwise
      */
     bool FindPlanDFS(
-        const TScriptInterface<IHTNWorldStateInterface>& WorldState,
+        const UHTNWorldState* WorldState,
         const TArray<UHTNTask*>& RemainingTasks,
         const TArray<UHTNPrimitiveTask*>& CurrentPlan,
         int32 CurrentDepth,
@@ -130,7 +129,7 @@ protected:
      * @return True if processing was successful, false otherwise
      */
     bool ProcessTask(
-        const TScriptInterface<IHTNWorldStateInterface>& WorldState,
+        const UHTNWorldState* WorldState,
         UHTNTask* Task,
         const TArray<UHTNTask*>& RemainingTasks,
         const TArray<UHTNPrimitiveTask*>& CurrentPlan,
@@ -145,7 +144,7 @@ protected:
      * @return True if effects were applied successfully, false otherwise
      */
     bool ApplyTaskEffects(
-        TScriptInterface<IHTNWorldStateInterface>& WorldState,
+        UHTNWorldState* WorldState,
         UHTNPrimitiveTask* Task);
 
     /**

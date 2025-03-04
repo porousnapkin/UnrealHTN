@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "HTNTask.h"
-#include "HTNTaskInterface.h"
 #include "HTNCondition.h"
 #include "HTNEffect.h"
 #include "HTNPrimitiveTask.generated.h"
@@ -19,8 +18,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHTNTaskExecutionDelegate, UHTNPrimi
  * Primitive tasks represent atomic actions that can be executed directly,
  * without further decomposition.
  */
-UCLASS(Abstract, BlueprintType, Blueprintable)
-class HIERARCHICALTASKNETWORKRUNTIME_API UHTNPrimitiveTask : public UHTNTask, public IHTNPrimitiveTaskInterface
+UCLASS(BlueprintType, Blueprintable)
+class HIERARCHICALTASKNETWORKRUNTIME_API UHTNPrimitiveTask : public UHTNTask
 {
     GENERATED_BODY()
 
@@ -31,17 +30,36 @@ public:
     virtual void PostInitProperties() override;
     //~ End UObject Interface
 
-    //~ Begin IHTNTaskInterface
-    virtual bool IsApplicable_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState) const override;
-    virtual void GetExpectedEffects_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState, TScriptInterface<IHTNWorldStateInterface>& OutEffects) const override;
-    virtual bool Decompose_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState, TArray<UHTNPrimitiveTask*>& OutTasks) override;
-    //~ End IHTNTaskInterface
+    //~ Begin UHTNTask Interface
+    virtual bool IsApplicable(const UHTNWorldState* WorldState) const override;
+    virtual UHTNWorldState* GetExpectedEffects(const UHTNWorldState* WorldState) const override;
+    virtual bool Decompose(const UHTNWorldState* WorldState, TArray<UHTNPrimitiveTask*>& OutTasks) override;
+    //~ End UHTNTask Interface
 
-    //~ Begin IHTNPrimitiveTaskInterface
-    virtual bool Execute_Implementation(TScriptInterface<IHTNWorldStateInterface>& WorldState) override;
-    virtual bool IsComplete_Implementation() const override;
-    virtual EHTNTaskStatus GetStatus_Implementation() const override;
-    //~ End IHTNPrimitiveTaskInterface
+    /**
+     * Begin execution of this primitive task.
+     * 
+     * @param WorldState - The current world state to use during execution
+     * @return True if execution started successfully, false if it failed immediately
+     */
+    UFUNCTION(BlueprintCallable, Category = "HTN|Task")
+    virtual bool Execute(UHTNWorldState* WorldState);
+
+    /**
+     * Check if this task has completed execution.
+     * 
+     * @return True if the task has finished (either succeeded or failed), false if still in progress
+     */
+    UFUNCTION(BlueprintCallable, Category = "HTN|Task")
+    virtual bool IsComplete() const;
+
+    /**
+     * Get the current execution status of this task.
+     * 
+     * @return Current status (InProgress, Succeeded, Failed, or Invalid)
+     */
+    UFUNCTION(BlueprintCallable, Category = "HTN|Task")
+    virtual EHTNTaskStatus GetStatus() const;
 
     /**
      * Called when the task is executed.
@@ -51,8 +69,8 @@ public:
      * @return EHTNTaskStatus - The result of the execution
      */
     UFUNCTION(BlueprintNativeEvent, Category = "HTN|Task")
-    EHTNTaskStatus ExecuteTask(TScriptInterface<IHTNWorldStateInterface>& WorldState);
-    virtual EHTNTaskStatus ExecuteTask_Implementation(TScriptInterface<IHTNWorldStateInterface>& WorldState);
+    EHTNTaskStatus ExecuteTask(UHTNWorldState* WorldState);
+    virtual EHTNTaskStatus ExecuteTask_Implementation(UHTNWorldState* WorldState);
 
     /**
      * Called every tick while the task is executing.
@@ -63,8 +81,8 @@ public:
      * @return EHTNTaskStatus - The current status of the task
      */
     UFUNCTION(BlueprintNativeEvent, Category = "HTN|Task")
-    EHTNTaskStatus TickTask(TScriptInterface<IHTNWorldStateInterface>& WorldState, float DeltaTime);
-    virtual EHTNTaskStatus TickTask_Implementation(TScriptInterface<IHTNWorldStateInterface>& WorldState, float DeltaTime);
+    EHTNTaskStatus TickTask(UHTNWorldState* WorldState, float DeltaTime);
+    virtual EHTNTaskStatus TickTask_Implementation(UHTNWorldState* WorldState, float DeltaTime);
 
     /**
      * Called when the task is ended, either through completion or abortion.
@@ -74,8 +92,8 @@ public:
      * @param FinalStatus - The final status of the task
      */
     UFUNCTION(BlueprintNativeEvent, Category = "HTN|Task")
-    void EndTask(TScriptInterface<IHTNWorldStateInterface>& WorldState, EHTNTaskStatus FinalStatus);
-    virtual void EndTask_Implementation(TScriptInterface<IHTNWorldStateInterface>& WorldState, EHTNTaskStatus FinalStatus);
+    void EndTask(UHTNWorldState* WorldState, EHTNTaskStatus FinalStatus);
+    virtual void EndTask_Implementation(UHTNWorldState* WorldState, EHTNTaskStatus FinalStatus);
 
     /**
      * Aborts the execution of this task.
@@ -83,7 +101,7 @@ public:
      * @param WorldState - The current world state
      */
     UFUNCTION(BlueprintCallable, Category = "HTN|Task")
-    virtual void AbortTask(TScriptInterface<IHTNWorldStateInterface>& WorldState);
+    virtual void AbortTask(UHTNWorldState* WorldState);
 
     /**
      * Applies the expected effects of this task to the world state.
@@ -92,7 +110,7 @@ public:
      * @param WorldState - The world state to modify
      */
     UFUNCTION(BlueprintCallable, Category = "HTN|Task")
-    virtual void ApplyEffects(TScriptInterface<IHTNWorldStateInterface>& WorldState) const;
+    virtual void ApplyEffects(UHTNWorldState* WorldState) const;
 
     /**
      * Sets the status of this task.

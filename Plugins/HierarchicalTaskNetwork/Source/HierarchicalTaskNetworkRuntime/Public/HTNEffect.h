@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "HTNWorldStateInterface.h"
 #include "HTNEffect.generated.h"
 
 /**
@@ -26,8 +25,8 @@ public:
 	 * @param WorldState - The world state to modify
 	 */
 	UFUNCTION(BlueprintNativeEvent, Category = "HTN|Effect")
-	void ApplyEffect(TScriptInterface<IHTNWorldStateInterface>& WorldState) const;
-	virtual void ApplyEffect_Implementation(TScriptInterface<IHTNWorldStateInterface>& WorldState) const;
+	void ApplyEffect(UHTNWorldState* WorldState) const;
+	virtual void ApplyEffect_Implementation(UHTNWorldState* WorldState) const;
 
 	/**
 	 * Gets a human-readable description of this effect.

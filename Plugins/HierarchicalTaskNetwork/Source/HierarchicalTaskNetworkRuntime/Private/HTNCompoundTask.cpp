@@ -24,7 +24,7 @@ void UHTNCompoundTask::BeginDestroy()
     Super::BeginDestroy();
 }
 
-bool UHTNCompoundTask::Decompose_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState, TArray<UHTNPrimitiveTask*>& OutTasks)
+bool UHTNCompoundTask::Decompose(const UHTNWorldState* WorldState, TArray<UHTNPrimitiveTask*>& OutTasks)
 {
     // Reset the current decomposition depth
     CurrentDecompositionDepth = 0;
@@ -39,7 +39,7 @@ bool UHTNCompoundTask::Decompose_Implementation(const TScriptInterface<IHTNWorld
 
     // Apply the selected method
     TArray<UHTNTask*> Subtasks;
-    if (!ApplyMethod_Implementation(BestMethod, WorldState, Subtasks))
+    if (!ApplyMethod(BestMethod, WorldState, Subtasks))
     {
         UE_LOG(LogHTNTask, Warning, TEXT("Failed to apply method for compound task: %s"), *ToString());
         return false;
@@ -58,14 +58,14 @@ bool UHTNCompoundTask::Decompose_Implementation(const TScriptInterface<IHTNWorld
     return true;
 }
 
-bool UHTNCompoundTask::IsApplicable_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState) const
+bool UHTNCompoundTask::IsApplicable(const UHTNWorldState* WorldState) const
 {
     // A compound task is applicable if at least one of its methods is applicable
     TArray<UHTNMethod*> ApplicableMethods;
-    return GetAvailableMethods_Implementation(WorldState, ApplicableMethods) && ApplicableMethods.Num() > 0;
+    return GetAvailableMethods(WorldState, ApplicableMethods) && ApplicableMethods.Num() > 0;
 }
 
-bool UHTNCompoundTask::GetAvailableMethods_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState, TArray<UHTNMethod*>& OutMethods) const
+bool UHTNCompoundTask::GetAvailableMethods(const UHTNWorldState* WorldState, TArray<UHTNMethod*>& OutMethods) const
 {
     // Check each method for applicability
     for (UHTNMethod* Method : Methods)
@@ -84,7 +84,7 @@ bool UHTNCompoundTask::GetAvailableMethods_Implementation(const TScriptInterface
     return OutMethods.Num() > 0;
 }
 
-bool UHTNCompoundTask::ApplyMethod_Implementation(UHTNMethod* Method, const TScriptInterface<IHTNWorldStateInterface>& WorldState, TArray<UHTNTask*>& OutTasks) const
+bool UHTNCompoundTask::ApplyMethod(UHTNMethod* Method, const UHTNWorldState* WorldState, TArray<UHTNTask*>& OutTasks) const
 {
     if (!Method)
     {
@@ -181,7 +181,7 @@ FString UHTNCompoundTask::GetDecompositionTreeString(int32 Indent) const
     return Result;
 }
 
-bool UHTNCompoundTask::DecomposeTaskRecursively(UHTNTask* Task, const TScriptInterface<IHTNWorldStateInterface>& WorldState, TArray<UHTNPrimitiveTask*>& OutTasks, int32 CurrentDepth) const
+bool UHTNCompoundTask::DecomposeTaskRecursively(UHTNTask* Task, const UHTNWorldState* WorldState, TArray<UHTNPrimitiveTask*>& OutTasks, int32 CurrentDepth) const
 {
     if (!Task)
     {
@@ -250,7 +250,7 @@ bool UHTNCompoundTask::DecomposeTaskRecursively(UHTNTask* Task, const TScriptInt
     }
 }
 
-UHTNMethod* UHTNCompoundTask::SelectBestMethod(const TScriptInterface<IHTNWorldStateInterface>& WorldState) const
+UHTNMethod* UHTNCompoundTask::SelectBestMethod(const UHTNWorldState* WorldState) const
 {
     TArray<UHTNMethod*> ApplicableMethods;
     if (GetAvailableMethods(WorldState, ApplicableMethods) && ApplicableMethods.Num() > 0)

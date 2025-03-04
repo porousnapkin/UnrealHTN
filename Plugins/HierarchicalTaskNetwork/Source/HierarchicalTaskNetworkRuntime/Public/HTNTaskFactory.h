@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "HTNTaskInterface.h"
 #include "HTNTask.h"
 #include "HTNPrimitiveTask.h"
 #include "HTNCompoundTask.h"

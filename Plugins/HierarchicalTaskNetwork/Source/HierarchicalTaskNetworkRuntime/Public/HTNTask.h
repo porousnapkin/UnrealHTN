@@ -4,18 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "HTNTaskInterface.h"
-#include "HTNWorldStateInterface.h"
+#include "HTNTaskStatus.h"
 #include "HTNTask.generated.h"
 
 /**
  * Base class for all HTN tasks.
  * Provides common functionality for both primitive and compound tasks.
- * This abstract class implements the IHTNTaskInterface and serves as the
- * foundation for the HTN planning system's task hierarchy.
+ * This abstract class serves as the foundation for the HTN planning system's task hierarchy.
  */
 UCLASS(Abstract, BlueprintType, Blueprintable, hidecategories = (Object))
-class HIERARCHICALTASKNETWORKRUNTIME_API UHTNTask : public UObject, public IHTNTaskInterface
+class HIERARCHICALTASKNETWORKRUNTIME_API UHTNTask : public UObject
 {
 	GENERATED_BODY()
 
@@ -30,12 +28,46 @@ public:
 	virtual void BeginDestroy() override;
 	//~ End UObject Interface
 
-	//~ Begin IHTNTaskInterface
-	virtual bool Decompose_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState, TArray<class UHTNPrimitiveTask*>& OutTasks) override;
-	virtual bool IsApplicable_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState) const override;
-	virtual void GetExpectedEffects_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState, TScriptInterface<IHTNWorldStateInterface>& OutEffects) const override;
-	virtual FString GetDescription_Implementation() const override;
-	//~ End IHTNTaskInterface
+	/**
+	 * Decompose this task into subtasks given a world state.
+	 * For primitive tasks, this typically returns just the task itself.
+	 * For compound tasks, this involves selecting a method and returning its subtasks.
+	 * 
+	 * @param WorldState - The current world state to use for decomposition
+	 * @param OutTasks - The resulting primitive tasks after decomposition
+	 * @return True if decomposition was successful, false otherwise
+	 */
+	UFUNCTION(BlueprintCallable, Category = "HTN|Task")
+	virtual bool Decompose(const UHTNWorldState* WorldState, TArray<class UHTNPrimitiveTask*>& OutTasks);
+
+	/**
+	 * Check if this task is applicable in the given world state.
+	 * This verifies that the task's preconditions are satisfied.
+	 * 
+	 * @param WorldState - The world state to check against
+	 * @return True if the task can be applied in the given world state, false otherwise
+	 */
+	UFUNCTION(BlueprintCallable, Category = "HTN|Task")
+	virtual bool IsApplicable(const UHTNWorldState* WorldState) const;
+
+	/**
+	 * Get the expected effects of executing this task on the world state.
+	 * This is used during planning to predict the resulting world state after execution.
+	 * 
+	 * @param WorldState - The current world state
+	 * @param OutEffects - The world state modifications that this task is expected to make
+	 */
+	UFUNCTION(BlueprintCallable, Category = "HTN|Task")
+	virtual UHTNWorldState* GetExpectedEffects(const UHTNWorldState* WorldState) const;
+
+	/**
+	 * Get a human-readable description of this task.
+	 * Useful for debugging and visualization.
+	 * 
+	 * @return String description of the task
+	 */
+	UFUNCTION(BlueprintCallable, Category = "HTN|Task")
+	virtual FString GetDescription() const;
 
 	/**
 	 * Validates that the task is set up correctly.

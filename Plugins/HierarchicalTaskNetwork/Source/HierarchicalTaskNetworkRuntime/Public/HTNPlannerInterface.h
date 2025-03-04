@@ -6,7 +6,6 @@
 #include "UObject/Interface.h"
 #include "HTNTask.h"
 #include "HTNPrimitiveTask.h"
-#include "HTNWorldStateInterface.h"
 #include "HTNPlannerInterface.generated.h"
 
 /**
@@ -299,7 +298,7 @@ public:
      */
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HTN|Planner")
     FHTNPlannerResult GeneratePlan(
-        const TScriptInterface<IHTNWorldStateInterface>& WorldState,
+        const UHTNWorldState* WorldState,
         const TArray<UHTNTask*>& GoalTasks,
         const FHTNPlanningConfig& Config);
     
@@ -313,7 +312,7 @@ public:
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HTN|Planner")
     bool ValidatePlan(
         const FHTNPlan& Plan,
-        const TScriptInterface<IHTNWorldStateInterface>& WorldState);
+        const UHTNWorldState* WorldState);
     
     /**
      * Generate a partial plan that extends an existing plan.
@@ -328,7 +327,7 @@ public:
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HTN|Planner")
     FHTNPlannerResult GeneratePartialPlan(
         const FHTNPlan& ExistingPlan,
-        const TScriptInterface<IHTNWorldStateInterface>& WorldState,
+        const UHTNWorldState* WorldState,
         const TArray<UHTNTask*>& GoalTasks,
         const FHTNPlanningConfig& Config);
     

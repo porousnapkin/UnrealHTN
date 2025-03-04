@@ -7,7 +7,7 @@ UHTNEffect::UHTNEffect()
 	// Will be expanded with full implementation later
 }
 
-void UHTNEffect::ApplyEffect_Implementation(TScriptInterface<IHTNWorldStateInterface>& WorldState) const
+void UHTNEffect::ApplyEffect_Implementation(UHTNWorldState* WorldState) const
 {
 	// Base implementation - to be overridden by derived classes
 	// Does nothing by default

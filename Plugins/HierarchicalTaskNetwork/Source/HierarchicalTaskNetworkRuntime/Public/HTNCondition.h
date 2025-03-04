@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "HTNWorldStateInterface.h"
 #include "HTNCondition.generated.h"
 
 /**
@@ -27,8 +26,8 @@ public:
 	 * @return True if the condition is satisfied, false otherwise
 	 */
 	UFUNCTION(BlueprintNativeEvent, Category = "HTN|Condition")
-	bool CheckCondition(const TScriptInterface<IHTNWorldStateInterface>& WorldState) const;
-	virtual bool CheckCondition_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState) const;
+	bool CheckCondition(const UHTNWorldState* WorldState) const;
+	virtual bool CheckCondition_Implementation(const UHTNWorldState* WorldState) const;
 
 	/**
 	 * Gets a human-readable description of this condition.

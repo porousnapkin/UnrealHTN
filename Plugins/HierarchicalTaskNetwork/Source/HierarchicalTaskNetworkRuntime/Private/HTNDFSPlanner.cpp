@@ -2,6 +2,7 @@
 
 #include "HTNDFSPlanner.h"
 #include "HTNLogging.h"
+#include "HTNWorldStateStruct.h"
 
 UHTNDFSPlanner::UHTNDFSPlanner()
 {
@@ -15,7 +16,7 @@ UHTNDFSPlanner::~UHTNDFSPlanner()
 }
 
 FHTNPlannerResult UHTNDFSPlanner::GeneratePlan_Implementation(
-    const TScriptInterface<IHTNWorldStateInterface>& WorldState,
+    const UHTNWorldState* WorldState,
     const TArray<UHTNTask*>& GoalTasks,
     const FHTNPlanningConfig& Config)
 {
@@ -23,7 +24,7 @@ FHTNPlannerResult UHTNDFSPlanner::GeneratePlan_Implementation(
     FHTNPlan ResultPlan;
     
     // Validate inputs
-    if (!WorldState.GetObject())
+    if (!WorldState)
     {
         UE_LOG(LogHTNPlannerPlugin, Error, TEXT("HTNDFSPlanner: Invalid world state provided"));
         return CreatePlannerResult(false, ResultPlan, EHTNPlannerFailReason::UnexpectedError);
@@ -48,7 +49,7 @@ FHTNPlannerResult UHTNDFSPlanner::GeneratePlan_Implementation(
     }
     
     // Clone the world state to avoid modifying the original
-    TScriptInterface<IHTNWorldStateInterface> WorkingState = WorldState->Clone();
+    UHTNWorldState* WorkingState = WorldState->Clone();
     
     // Set up empty plan
     TArray<UHTNPrimitiveTask*> CurrentPlan;
@@ -101,7 +102,7 @@ FHTNPlannerResult UHTNDFSPlanner::GeneratePlan_Implementation(
 
 bool UHTNDFSPlanner::ValidatePlan_Implementation(
     const FHTNPlan& Plan,
-    const TScriptInterface<IHTNWorldStateInterface>& WorldState)
+    const UHTNWorldState* WorldState)
 {
     // Empty plans are considered valid
     if (Plan.IsEmpty())
@@ -110,14 +111,14 @@ bool UHTNDFSPlanner::ValidatePlan_Implementation(
     }
     
     // Ensure world state is valid
-    if (!WorldState.GetObject())
+    if (!WorldState)
     {
         UE_LOG(LogHTNPlannerPlugin, Error, TEXT("HTNDFSPlanner: Invalid world state provided for plan validation"));
         return false;
     }
     
     // Create a working copy of the world state
-    TScriptInterface<IHTNWorldStateInterface> WorkingState = WorldState->Clone();
+    UHTNWorldState* WorkingState = WorldState->Clone();
     
     // Check each task in sequence
     for (UHTNPrimitiveTask* Task : Plan.Tasks)
@@ -129,7 +130,7 @@ bool UHTNDFSPlanner::ValidatePlan_Implementation(
         }
         
         // Check if the task is applicable in the current world state
-        if (!IHTNTaskInterface::Execute_IsApplicable(Task, WorkingState))
+        if (!Task->IsApplicable(WorkingState))
         {
             UE_LOG(LogHTNPlannerPlugin, Verbose, TEXT("HTNDFSPlanner: Task %s is not applicable in current world state during validation"), 
                    *Task->ToString());
@@ -150,7 +151,7 @@ bool UHTNDFSPlanner::ValidatePlan_Implementation(
 
 FHTNPlannerResult UHTNDFSPlanner::GeneratePartialPlan_Implementation(
     const FHTNPlan& ExistingPlan,
-    const TScriptInterface<IHTNWorldStateInterface>& WorldState,
+    const UHTNWorldState* WorldState,
     const TArray<UHTNTask*>& GoalTasks,
     const FHTNPlanningConfig& Config)
 {
@@ -158,7 +159,7 @@ FHTNPlannerResult UHTNDFSPlanner::GeneratePartialPlan_Implementation(
     FHTNPlan ResultPlan = ExistingPlan;
     
     // Validate inputs
-    if (!WorldState.GetObject())
+    if (!WorldState)
     {
         UE_LOG(LogHTNPlannerPlugin, Error, TEXT("HTNDFSPlanner: Invalid world state provided for partial planning"));
         return CreatePlannerResult(false, ResultPlan, EHTNPlannerFailReason::UnexpectedError);
@@ -183,7 +184,7 @@ FHTNPlannerResult UHTNDFSPlanner::GeneratePartialPlan_Implementation(
     }
     
     // Clone the world state to avoid modifying the original
-    TScriptInterface<IHTNWorldStateInterface> WorkingState = WorldState->Clone();
+    UHTNWorldState* WorkingState = WorldState->Clone();
     
     // Apply the effects of all tasks in the existing plan to get the updated world state
     for (UHTNPrimitiveTask* Task : ExistingPlan.Tasks)
@@ -255,7 +256,7 @@ void UHTNDFSPlanner::ConfigurePlanner_Implementation(const FHTNPlanningConfig& N
 }
 
 bool UHTNDFSPlanner::FindPlanDFS(
-    const TScriptInterface<IHTNWorldStateInterface>& WorldState,
+    const UHTNWorldState* WorldState,
     const TArray<UHTNTask*>& RemainingTasks,
     const TArray<UHTNPrimitiveTask*>& CurrentPlan,
     int32 CurrentDepth,
@@ -298,7 +299,7 @@ bool UHTNDFSPlanner::FindPlanDFS(
 }
 
 bool UHTNDFSPlanner::ProcessTask(
-    const TScriptInterface<IHTNWorldStateInterface>& WorldState,
+    const UHTNWorldState* WorldState,
     UHTNTask* Task,
     const TArray<UHTNTask*>& RemainingTasks,
     const TArray<UHTNPrimitiveTask*>& CurrentPlan,
@@ -333,7 +334,7 @@ bool UHTNDFSPlanner::ProcessTask(
     if (UHTNPrimitiveTask* PrimitiveTask = Cast<UHTNPrimitiveTask>(Task))
     {
         // Clone the world state to avoid modifying the original
-        TScriptInterface<IHTNWorldStateInterface> NewWorldState = WorldState->Clone();
+        UHTNWorldState* NewWorldState = WorldState->Clone();
         
         // Apply the primitive task's effects to the world state
         if (!ApplyTaskEffects(NewWorldState, PrimitiveTask))
@@ -423,7 +424,7 @@ bool UHTNDFSPlanner::ProcessTask(
 }
 
 bool UHTNDFSPlanner::ApplyTaskEffects(
-    TScriptInterface<IHTNWorldStateInterface>& WorldState,
+    UHTNWorldState* WorldState,
     UHTNPrimitiveTask* Task)
 {
     if (!Task)
@@ -439,10 +440,9 @@ bool UHTNDFSPlanner::ApplyTaskEffects(
     }
     
     // Get the task's expected effects
-    TScriptInterface<IHTNWorldStateInterface> Effects;
-    IHTNTaskInterface::Execute_GetExpectedEffects(Task, WorldState, Effects);
+    UHTNWorldState* Effects = Task->GetExpectedEffects(WorldState);
     
-    if (!Effects.GetObject())
+    if (!Effects)
     {
         UE_LOG(LogHTNPlannerPlugin, Error, TEXT("HTNDFSPlanner: Failed to get expected effects for task %s"), *Task->ToString());
         return false;

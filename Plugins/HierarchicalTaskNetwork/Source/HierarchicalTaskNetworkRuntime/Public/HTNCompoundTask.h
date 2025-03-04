@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "HTNTask.h"
-#include "HTNTaskInterface.h"
 #include "HTNMethod.h"
 #include "HTNCompoundTask.generated.h"
 
@@ -13,8 +12,8 @@
  * Compound tasks represent higher-level tasks that must be decomposed into 
  * simpler tasks before they can be executed.
  */
-UCLASS(Abstract, BlueprintType, Blueprintable)
-class HIERARCHICALTASKNETWORKRUNTIME_API UHTNCompoundTask : public UHTNTask, public IHTNCompoundTaskInterface
+UCLASS(BlueprintType, Blueprintable)
+class HIERARCHICALTASKNETWORKRUNTIME_API UHTNCompoundTask : public UHTNTask
 {
     GENERATED_BODY()
 
@@ -26,15 +25,31 @@ public:
     virtual void BeginDestroy() override;
     //~ End UObject Interface
 
-    //~ Begin IHTNTaskInterface
-    virtual bool Decompose_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState, TArray<UHTNPrimitiveTask*>& OutTasks) override;
-    virtual bool IsApplicable_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState) const override;
-    //~ End IHTNTaskInterface
+    //~ Begin UHTNTask Interface
+    virtual bool Decompose(const UHTNWorldState* WorldState, TArray<UHTNPrimitiveTask*>& OutTasks) override;
+    virtual bool IsApplicable(const UHTNWorldState* WorldState) const override;
+    //~ End UHTNTask Interface
 
-    //~ Begin IHTNCompoundTaskInterface
-    virtual bool GetAvailableMethods_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState, TArray<UHTNMethod*>& OutMethods) const override;
-    virtual bool ApplyMethod_Implementation(UHTNMethod* Method, const TScriptInterface<IHTNWorldStateInterface>& WorldState, TArray<UHTNTask*>& OutTasks) const override;
-    //~ End IHTNCompoundTaskInterface
+    /**
+     * Get all methods (alternative decompositions) that are available for this task.
+     * 
+     * @param WorldState - The current world state
+     * @param OutMethods - The available methods for this compound task
+     * @return True if at least one method is available, false otherwise
+     */
+    UFUNCTION(BlueprintCallable, Category = "HTN|Task")
+    virtual bool GetAvailableMethods(const UHTNWorldState* WorldState, TArray<class UHTNMethod*>& OutMethods) const;
+
+    /**
+     * Apply a selected method to decompose this task into subtasks.
+     * 
+     * @param Method - The method to apply
+     * @param WorldState - The current world state
+     * @param OutTasks - The resulting tasks after decomposition
+     * @return True if the method was successfully applied, false otherwise
+     */
+    UFUNCTION(BlueprintCallable, Category = "HTN|Task")
+    virtual bool ApplyMethod(class UHTNMethod* Method, const UHTNWorldState* WorldState, TArray<UHTNTask*>& OutTasks) const;
 
     /**
      * Validates that the compound task is set up correctly.
@@ -82,7 +97,7 @@ private:
      * @param CurrentDepth - Current recursion depth
      * @return True if decomposition was successful, false otherwise
      */
-    bool DecomposeTaskRecursively(UHTNTask* Task, const TScriptInterface<IHTNWorldStateInterface>& WorldState, TArray<UHTNPrimitiveTask*>& OutTasks, int32 CurrentDepth) const;
+    bool DecomposeTaskRecursively(UHTNTask* Task, const UHTNWorldState* WorldState, TArray<UHTNPrimitiveTask*>& OutTasks, int32 CurrentDepth) const;
 
     /**
      * Selects the best applicable method from available methods.
@@ -90,5 +105,5 @@ private:
      * @param WorldState - The current world state
      * @return The best applicable method, or nullptr if none are applicable
      */
-    UHTNMethod* SelectBestMethod(const TScriptInterface<IHTNWorldStateInterface>& WorldState) const;
+    UHTNMethod* SelectBestMethod(const UHTNWorldState* WorldState) const;
 };

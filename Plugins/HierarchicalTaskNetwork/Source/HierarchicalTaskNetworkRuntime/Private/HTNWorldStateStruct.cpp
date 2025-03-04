@@ -153,131 +153,58 @@ UHTNWorldState::UHTNWorldState()
 {
 }
 
-bool UHTNWorldState::GetProperty_Implementation(FName Key, FHTNProperty& OutValue) const
+bool UHTNWorldState::GetProperty(FName Key, FHTNProperty& OutValue) const
 {
 	return WorldState.GetProperty(Key, OutValue);
 }
 
-void UHTNWorldState::SetProperty_Implementation(FName Key, const FHTNProperty& Value)
+void UHTNWorldState::SetProperty(FName Key, const FHTNProperty& Value)
 {
 	WorldState.SetProperty(Key, Value);
 }
 
-bool UHTNWorldState::HasProperty_Implementation(FName Key) const
+bool UHTNWorldState::HasProperty(FName Key) const
 {
 	return WorldState.HasProperty(Key);
 }
 
-bool UHTNWorldState::RemoveProperty_Implementation(FName Key)
+bool UHTNWorldState::RemoveProperty(FName Key)
 {
 	return WorldState.RemoveProperty(Key);
 }
 
-TScriptInterface<IHTNWorldStateInterface> UHTNWorldState::Clone_Implementation() const
+UHTNWorldState* UHTNWorldState::Clone() const
 {
 	UHTNWorldState* Clone = CreateFromStruct(WorldState.Clone());
-	TScriptInterface<IHTNWorldStateInterface> Result;
-	Result.SetObject(Clone);
-	Result.SetInterface(Cast<IHTNWorldStateInterface>(Clone));
-	return Result;
+	return Clone;
 }
 
-bool UHTNWorldState::Equals_Implementation(const TScriptInterface<IHTNWorldStateInterface>& Other) const
+bool UHTNWorldState::Equals(const UHTNWorldState* Other) const
 {
-	if (!Other.GetObject())
+	if (!Other)
 	{
 		return false;
 	}
 
-	const UHTNWorldState* OtherState = Cast<UHTNWorldState>(Other.GetObject());
-	if (!OtherState)
-	{
-		// If it's a different implementation, compare property by property
-		TArray<FName> AllNames = GetPropertyNames_Implementation();
-		for (const FName& Name : Other->GetPropertyNames_Implementation())
-		{
-			if (!AllNames.Contains(Name))
-			{
-				AllNames.Add(Name);
-			}
-		}
-
-		for (const FName& Name : AllNames)
-		{
-			FHTNProperty Value1, Value2;
-			bool HasValue1 = GetProperty_Implementation(Name, Value1);
-			bool HasValue2 = Other->GetProperty_Implementation(Name, Value2);
-
-			if (HasValue1 != HasValue2 || (HasValue1 && HasValue2 && Value1 != Value2))
-			{
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	return WorldState.Equals(OtherState->WorldState);
+	return WorldState.Equals(Other->WorldState);
 }
 
-TScriptInterface<IHTNWorldStateInterface> UHTNWorldState::CreateDifference_Implementation(const TScriptInterface<IHTNWorldStateInterface>& Other) const
+UHTNWorldState* UHTNWorldState::CreateDifference(const UHTNWorldState* Other) const
 {
-	if (!Other.GetObject())
+	if (!Other)
 	{
-		return Clone_Implementation();
+		return Clone();
 	}
 
-	const UHTNWorldState* OtherState = Cast<UHTNWorldState>(Other.GetObject());
-	if (!OtherState)
-	{
-		// If it's a different implementation, create a difference manually
-		FHTNWorldStateStruct Difference;
-
-		// Process properties in this world state
-		TArray<FName> MyProperties = GetPropertyNames_Implementation();
-		for (const FName& Name : MyProperties)
-		{
-			FHTNProperty MyValue, OtherValue;
-			GetProperty_Implementation(Name, MyValue);
-			
-			if (!Other->GetProperty_Implementation(Name, OtherValue) || MyValue != OtherValue)
-			{
-				Difference.SetProperty(Name, MyValue);
-			}
-		}
-
-		// Process properties in the other world state
-		TArray<FName> OtherProperties = Other->GetPropertyNames_Implementation();
-		for (const FName& Name : OtherProperties)
-		{
-			if (!HasProperty_Implementation(Name))
-			{
-				FHTNProperty OtherValue;
-				Other->GetProperty_Implementation(Name, OtherValue);
-				Difference.SetProperty(Name, OtherValue);
-			}
-		}
-
-		UHTNWorldState* Result = CreateFromStruct(Difference);
-		TScriptInterface<IHTNWorldStateInterface> ResultInterface;
-		ResultInterface.SetObject(Result);
-		ResultInterface.SetInterface(Cast<IHTNWorldStateInterface>(Result));
-		return ResultInterface;
-	}
-
-	UHTNWorldState* Result = CreateFromStruct(WorldState.CreateDifference(OtherState->WorldState));
-	TScriptInterface<IHTNWorldStateInterface> ResultInterface;
-	ResultInterface.SetObject(Result);
-	ResultInterface.SetInterface(Cast<IHTNWorldStateInterface>(Result));
-	return ResultInterface;
+	return CreateFromStruct(WorldState.CreateDifference(Other->WorldState));
 }
 
-TArray<FName> UHTNWorldState::GetPropertyNames_Implementation() const
+TArray<FName> UHTNWorldState::GetPropertyNames() const
 {
 	return WorldState.GetPropertyNames();
 }
 
-FString UHTNWorldState::ToString_Implementation() const
+FString UHTNWorldState::ToString() const
 {
 	return WorldState.ToString();
 }

@@ -4,7 +4,6 @@
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationCommon.h"
 #include "HTNWorldStateStruct.h"
-#include "HTNWorldStateInterface.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
@@ -207,42 +206,35 @@ bool FHTNWorldStateTest::RunTest(const FString& Parameters)
 	{
 		UHTNWorldState* WorldState = NewObject<UHTNWorldState>();
 		
-		// Test implementing the interface
-		TScriptInterface<IHTNWorldStateInterface> Interface;
-		Interface.SetObject(WorldState);
-		Interface.SetInterface(Cast<IHTNWorldStateInterface>(WorldState));
-		
-		TestNotNull("Interface object is valid", Interface.GetObject());
-		TestTrue("Object implements IHTNWorldStateInterface", Interface.GetInterface() != nullptr);
+		TestNotNull("Interface object is valid", WorldState);
 		
 		// Test basic operations
-		Interface->SetProperty_Implementation(FName("TestProp"), FHTNProperty(42));
-		TestTrue("Interface HasProperty works", Interface->HasProperty_Implementation(FName("TestProp")));
+		WorldState->SetProperty(FName("TestProp"), FHTNProperty(42));
+		TestTrue("Interface HasProperty works", WorldState->HasProperty(FName("TestProp")));
 		
 		FHTNProperty Value;
-		TestTrue("Interface GetProperty works", Interface->GetProperty_Implementation(FName("TestProp"), Value));
+		TestTrue("Interface GetProperty works", WorldState->GetProperty(FName("TestProp"), Value));
 		TestEqual("Interface property value is correct", Value.GetIntValue(), 42);
 		
 		// Test cloning
-		TScriptInterface<IHTNWorldStateInterface> ClonedInterface = Interface->Clone_Implementation();
-		TestNotNull("Cloned interface object is valid", ClonedInterface.GetObject());
-		TestTrue("Cloned object implements IHTNWorldStateInterface", ClonedInterface.GetInterface() != nullptr);
+		UHTNWorldState* Clone = WorldState->Clone();
+		TestNotNull("Cloned interface object is valid", Clone);
 		
 		FHTNProperty ClonedValue;
-		TestTrue("Cloned interface has property", ClonedInterface->HasProperty_Implementation(FName("TestProp")));
-		TestTrue("Cloned interface GetProperty works", ClonedInterface->GetProperty_Implementation(FName("TestProp"), ClonedValue));
+		TestTrue("Cloned interface has property", Clone->HasProperty(FName("TestProp")));
+		TestTrue("Cloned interface GetProperty works", Clone->GetProperty(FName("TestProp"), ClonedValue));
 		TestEqual("Cloned interface property value is correct", ClonedValue.GetIntValue(), 42);
 		
 		// Test equality
-		TestTrue("Interface equals itself", Interface->Equals_Implementation(Interface));
-		TestTrue("Interface equals its clone", Interface->Equals_Implementation(ClonedInterface));
+		TestTrue("Interface equals itself", WorldState->Equals(WorldState));
+		TestTrue("Interface equals its clone", WorldState->Equals(Clone));
 		
 		// Test difference
-		Interface->SetProperty_Implementation(FName("DiffProp"), FHTNProperty(true));
-		TScriptInterface<IHTNWorldStateInterface> Difference = Interface->CreateDifference_Implementation(ClonedInterface);
+		WorldState->SetProperty(FName("DiffProp"), FHTNProperty(true));
+		UHTNWorldState* Difference = WorldState->CreateDifference(Clone);
 		
-		TestTrue("Difference has property only in first", Difference->HasProperty_Implementation(FName("DiffProp")));
-		TestFalse("Difference doesn't have shared property", Difference->HasProperty_Implementation(FName("TestProp")));
+		TestTrue("Difference has property only in first", Difference->HasProperty(FName("DiffProp")));
+		TestFalse("Difference doesn't have shared property", Difference->HasProperty(FName("TestProp")));
 	}
 	
 	// Test CreateFromStruct
@@ -254,7 +246,7 @@ bool FHTNWorldStateTest::RunTest(const FString& Parameters)
 		TestNotNull("CreateFromStruct returns valid object", ObjectState);
 		
 		FHTNProperty Value;
-		TestTrue("Created object has property", ObjectState->GetProperty_Implementation(FName("TestProp"), Value));
+		TestTrue("Created object has property", ObjectState->GetProperty(FName("TestProp"), Value));
 		TestEqual("Created object property value is correct", Value.GetIntValue(), 42);
 	}
 	

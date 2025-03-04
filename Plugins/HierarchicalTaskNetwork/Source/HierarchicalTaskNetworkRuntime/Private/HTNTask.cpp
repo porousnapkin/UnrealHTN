@@ -2,6 +2,7 @@
 
 #include "HTNTask.h"
 #include "HTNWorldStateStruct.h"
+#include "HTNPrimitiveTask.h"
 
 UHTNTask::UHTNTask()
 	: TaskID(FGuid::NewGuid())
@@ -35,32 +36,29 @@ void UHTNTask::BeginDestroy()
 	Super::BeginDestroy();
 }
 
-bool UHTNTask::Decompose_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState, TArray<class UHTNPrimitiveTask*>& OutTasks)
+bool UHTNTask::Decompose(const UHTNWorldState* WorldState, TArray<UHTNPrimitiveTask*>& OutTasks)
 {
 	// Base implementation - to be overridden by derived classes
 	UE_LOG(LogHTNTask, Warning, TEXT("Decompose not implemented for task: %s"), *ToString());
 	return false;
 }
 
-bool UHTNTask::IsApplicable_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState) const
+bool UHTNTask::IsApplicable(const UHTNWorldState* WorldState) const
 {
 	// Base implementation - default to applicable
 	// Derived classes should override this to check preconditions
 	return true;
 }
 
-void UHTNTask::GetExpectedEffects_Implementation(const TScriptInterface<IHTNWorldStateInterface>& WorldState, TScriptInterface<IHTNWorldStateInterface>& OutEffects) const
+UHTNWorldState* UHTNTask::GetExpectedEffects(const UHTNWorldState* WorldState) const
 {
-	// Base implementation - default to no effects
-	// Derived classes should override this to specify their effects
-	
-	// Create an empty effects world state
-	UHTNWorldState* EmptyEffects = NewObject<UHTNWorldState>(GetTransientPackage());
-	OutEffects.SetObject(EmptyEffects);
-	OutEffects.SetInterface(Cast<IHTNWorldStateInterface>(EmptyEffects));
+	// Create empty effects world state if none provided
+	UHTNWorldState* OutEffects = NewObject<UHTNWorldState>(GetTransientPackage());
+
+	return OutEffects;
 }
 
-FString UHTNTask::GetDescription_Implementation() const
+FString UHTNTask::GetDescription() const
 {
 	// Use the custom description if provided, otherwise use the task name
 	return !Description.IsEmpty() ? Description : TaskName.ToString();
