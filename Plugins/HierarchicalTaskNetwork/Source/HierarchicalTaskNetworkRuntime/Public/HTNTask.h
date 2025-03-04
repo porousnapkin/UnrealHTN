@@ -76,11 +76,6 @@ public:
 	 */
 	void UpdateTaskName();
 
-protected:
-	/** Unique identifier for this task instance */
-	UPROPERTY(VisibleAnywhere, Category = "Task")
-	FGuid TaskID;
-
 	/** Display name of the task */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Task")
 	FName TaskName;
@@ -96,6 +91,11 @@ protected:
 	/** Color used for debugging visualization */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 	FLinearColor DebugColor;
+
+protected:
+	/** Unique identifier for this task instance */
+	UPROPERTY(VisibleAnywhere, Category = "Task")
+	FGuid TaskID;
 
 	/** Whether this task is currently being debugged */
 	UPROPERTY(Transient)

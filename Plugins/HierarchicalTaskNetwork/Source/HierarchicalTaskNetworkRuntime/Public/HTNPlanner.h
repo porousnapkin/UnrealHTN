@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
+#include "HTNLogging.h"
 
 /**
  * The public interface to the HTNPlanner module.
@@ -36,6 +37,3 @@ public:
 		return FModuleManager::Get().IsModuleLoaded("HTNPlanner");
 	}
 };
-
-// Create a log category for this module
-DECLARE_LOG_CATEGORY_EXTERN(LogHTNPlanner, Log, All);
