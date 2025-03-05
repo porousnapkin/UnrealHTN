@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HTNPlan.h"
-#include "HTNTask.h"
+#include "Tasks/HTNTask.h"
 #include "HTNPlannerBase.generated.h"
 
 /**

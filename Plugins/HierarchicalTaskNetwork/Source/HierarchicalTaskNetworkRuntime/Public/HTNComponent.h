@@ -95,7 +95,7 @@ public:
      * @return The execution context
      */
     UFUNCTION(BlueprintCallable, Category = "AI|HTN")
-    const FHTNExecutionContext& GetExecutionContext() const;
+    UHTNExecutionContext* GetExecutionContext() const;
 
     /**
      * Gets the world state.
@@ -153,7 +153,7 @@ protected:
 
     /** Execution context */
     UPROPERTY(BlueprintReadOnly, Category = "AI|HTN")
-    FHTNExecutionContext ExecutionContext;
+    UHTNExecutionContext* ExecutionContext;
 
     /** Plan executor */
     UPROPERTY(BlueprintReadOnly, Category = "AI|HTN")

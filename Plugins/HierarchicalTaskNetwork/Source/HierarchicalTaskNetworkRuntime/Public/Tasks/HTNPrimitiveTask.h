@@ -39,11 +39,11 @@ public:
     /**
      * Begin execution of this primitive task.
      * 
-     * @param WorldState - The current world state to use during execution
+     * @param ExecutionContext - The current world state to use during execution
      * @return True if execution started successfully, false if it failed immediately
      */
     UFUNCTION(BlueprintCallable, Category = "HTN|Task")
-    virtual bool Execute(UHTNWorldState* WorldState);
+    virtual bool Execute(UHTNExecutionContext* ExecutionContext);
 
     /**
      * Check if this task has completed execution.
@@ -65,52 +65,52 @@ public:
      * Called when the task is executed.
      * This is where the actual implementation of the task should go.
      * 
-     * @param WorldState - The current world state
+     * @param ExecutionContext
      * @return EHTNTaskStatus - The result of the execution
      */
     UFUNCTION(BlueprintNativeEvent, Category = "HTN|Task")
-    EHTNTaskStatus ExecuteTask(UHTNWorldState* WorldState);
-    virtual EHTNTaskStatus ExecuteTask_Implementation(UHTNWorldState* WorldState);
+    EHTNTaskStatus ExecuteTask(UHTNExecutionContext* ExecutionContext);
+    virtual EHTNTaskStatus ExecuteTask_Implementation(UHTNExecutionContext* ExecutionContext);
 
     /**
      * Called every tick while the task is executing.
      * Use this for ongoing tasks that need to update over time.
      * 
-     * @param WorldState - The current world state
+     * @param ExecutionContext
      * @param DeltaTime - Time in seconds since the last tick
      * @return EHTNTaskStatus - The current status of the task
      */
     UFUNCTION(BlueprintNativeEvent, Category = "HTN|Task")
-    EHTNTaskStatus TickTask(UHTNWorldState* WorldState, float DeltaTime);
-    virtual EHTNTaskStatus TickTask_Implementation(UHTNWorldState* WorldState, float DeltaTime);
+    EHTNTaskStatus TickTask(UHTNExecutionContext* ExecutionContext, float DeltaTime);
+    virtual EHTNTaskStatus TickTask_Implementation(UHTNExecutionContext* ExecutionContext, float DeltaTime);
 
     /**
      * Called when the task is ended, either through completion or abortion.
      * Use this for cleaning up resources.
      * 
-     * @param WorldState - The current world state
+     * @param ExecutionContext
      * @param FinalStatus - The final status of the task
      */
     UFUNCTION(BlueprintNativeEvent, Category = "HTN|Task")
-    void EndTask(UHTNWorldState* WorldState, EHTNTaskStatus FinalStatus);
-    virtual void EndTask_Implementation(UHTNWorldState* WorldState, EHTNTaskStatus FinalStatus);
+    void EndTask(UHTNExecutionContext* ExecutionContext, EHTNTaskStatus FinalStatus);
+    virtual void EndTask_Implementation(UHTNExecutionContext* ExecutionContext, EHTNTaskStatus FinalStatus);
 
     /**
      * Aborts the execution of this task.
      * 
-     * @param WorldState - The current world state
+     * @param ExecutionContext - The current world state
      */
     UFUNCTION(BlueprintCallable, Category = "HTN|Task")
-    virtual void AbortTask(UHTNWorldState* WorldState);
+    virtual void AbortTask(UHTNExecutionContext* ExecutionContext);
 
     /**
      * Applies the expected effects of this task to the world state.
      * This is used during planning to simulate the execution of the task.
      * 
-     * @param WorldState - The world state to modify
+     * @param ExecutionContext - The world state to modify
      */
     UFUNCTION(BlueprintCallable, Category = "HTN|Task")
-    virtual void ApplyEffects(UHTNWorldState* WorldState) const;
+    virtual void ApplyEffects(UHTNExecutionContext* ExecutionContext) const;
 
     /**
      * Sets the status of this task.

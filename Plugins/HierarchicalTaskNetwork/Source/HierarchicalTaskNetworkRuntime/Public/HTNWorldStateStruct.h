@@ -5,6 +5,7 @@
 #include "HTNPlanner.h"
 #include "HTNWorldStateStruct.generated.h"
 
+class UHTNExecutionContext;
 /**
  * Concrete implementation of the HTN world state.
  * Represents the current state of the world for HTN planning.
@@ -16,10 +17,16 @@ struct HIERARCHICALTASKNETWORKRUNTIME_API FHTNWorldStateStruct
 
 public:
 	/** Default constructor */
-	FHTNWorldStateStruct() {}
+	FHTNWorldStateStruct() : OwnerActor(nullptr) {}
 
 	/** Constructor with initial properties */
 	FHTNWorldStateStruct(const TMap<FName, FHTNProperty>& InProperties);
+
+	/** Constructor with owner actor */
+	FHTNWorldStateStruct(AActor* InOwnerActor);
+
+	/** Constructor with owner actor and initial properties */
+	FHTNWorldStateStruct(AActor* InOwnerActor, const TMap<FName, FHTNProperty>& InProperties);
 
 	/** Copy constructor */
 	FHTNWorldStateStruct(const FHTNWorldStateStruct& Other);
@@ -101,6 +108,18 @@ public:
 	 */
 	FString ToString() const;
 
+	/**
+	 * Get the owner actor of this world state.
+	 * @return The owner actor, or nullptr if none
+	 */
+	AActor* GetOwner() const { return OwnerActor; }
+
+	/**
+	 * Set the owner actor of this world state.
+	 * @param InOwnerActor - The actor to set as owner
+	 */
+	void SetOwner(AActor* InOwnerActor) { OwnerActor = InOwnerActor; }
+
 	// Template methods for type-safe property access
 
 	/**
@@ -124,6 +143,10 @@ private:
 	/** The properties stored in this world state */
 	UPROPERTY()
 	TMap<FName, FHTNProperty> Properties;
+
+	/** The owner actor of this world state */
+	UPROPERTY()
+	AActor* OwnerActor;
 };
 
 /**
@@ -228,6 +251,20 @@ public:
 	 * @param InWorldState - The world state struct to set
 	 */
 	void SetWorldState(const FHTNWorldStateStruct& InWorldState) { WorldState = InWorldState; }
+
+	/**
+	 * Get the owner actor of this world state.
+	 * @return The owner actor, or nullptr if none
+	 */
+	UFUNCTION(BlueprintCallable, Category = "HTN|WorldState")
+	AActor* GetOwner() const { return WorldState.GetOwner(); }
+
+	/**
+	 * Set the owner actor of this world state.
+	 * @param InOwnerActor - The actor to set as owner
+	 */
+	UFUNCTION(BlueprintCallable, Category = "HTN|WorldState")
+	void SetOwner(AActor* InOwnerActor) { WorldState.SetOwner(InOwnerActor); }
 
 	// Template methods for type-safe property access
 

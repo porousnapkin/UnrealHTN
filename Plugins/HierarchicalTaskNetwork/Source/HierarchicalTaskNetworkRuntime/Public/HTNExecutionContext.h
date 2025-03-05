@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -10,55 +8,37 @@
 /**
  * Execution context for HTN tasks.
  * This class manages the state and resources during plan execution,
- * providing tasks with access to the agent, world state, and shared parameters.
+ * providing tasks with access to the world state and shared parameters.
  */
-USTRUCT(BlueprintType)
-struct HIERARCHICALTASKNETWORKRUNTIME_API FHTNExecutionContext
+UCLASS(BlueprintType)
+class HIERARCHICALTASKNETWORKRUNTIME_API UHTNExecutionContext : public UObject
 {
     GENERATED_BODY()
 
 public:
     /** Default constructor */
-    FHTNExecutionContext();
-
-    /** Constructor with agent */
-    FHTNExecutionContext(AActor* InOwnerActor);
+    UHTNExecutionContext();
 
     /** Copy constructor */
-    FHTNExecutionContext(const FHTNExecutionContext& Other);
-
-    /** Move constructor */
-    FHTNExecutionContext(FHTNExecutionContext&& Other) noexcept;
-
-    /** Copy assignment operator */
-    FHTNExecutionContext& operator=(const FHTNExecutionContext& Other);
-
-    /** Move assignment operator */
-    FHTNExecutionContext& operator=(FHTNExecutionContext&& Other) noexcept;
+    UHTNExecutionContext(const UHTNExecutionContext* Other);
 
     /**
-     * Gets the agent executing the plan.
-     * @return The actor executing the plan, or nullptr if none
-     */
-    FORCEINLINE AActor* GetOwner() const { return OwnerActor; }
-
-    /**
-     * Sets the agent executing the plan.
-     * @param InOwnerActor - The actor executing the plan
-     */
-    void SetOwner(AActor* InOwnerActor);
-
-    /**
-     * Gets the current world state.
+     * Gets the world state being used for execution.
      * @return The mutable world state
      */
     FORCEINLINE UHTNWorldState* GetWorldState() const { return WorldState; }
 
     /**
-     * Sets the current world state.
+     * Sets the world state used for execution.
      * @param InWorldState - The world state to use
      */
     void SetWorldState(UHTNWorldState* InWorldState);
+
+    /**
+     * Gets the owner actor (from the world state).
+     * @return The owner actor, or nullptr if not set
+     */
+    FORCEINLINE AActor* GetOwner() const { return WorldState ? WorldState->GetOwner() : nullptr; }
 
     /**
      * Gets a parameter value by name.
@@ -110,7 +90,7 @@ public:
      * Creates a clone of this context.
      * @return A new context with the same state
      */
-    FHTNExecutionContext Clone() const;
+    UHTNExecutionContext Clone() const;
 
     // Template methods for type-safe parameter access
 
@@ -132,10 +112,6 @@ public:
     void SetParameterValue(FName Key, const T& Value);
 
 private:
-    /** The agent executing the plan */
-    UPROPERTY()
-    AActor* OwnerActor;
-
     /** The current world state */
     UPROPERTY()
     UHTNWorldState* WorldState;
@@ -147,7 +123,7 @@ private:
 
 // Template specializations for type-safe parameter access
 template<>
-FORCEINLINE bool FHTNExecutionContext::GetParameterValue<bool>(FName Key, const bool& DefaultValue) const
+FORCEINLINE bool UHTNExecutionContext::GetParameterValue<bool>(FName Key, const bool& DefaultValue) const
 {
     FHTNProperty Value;
     if (GetParameter(Key, Value) && Value.GetType() == EHTNPropertyType::Boolean)
@@ -158,7 +134,7 @@ FORCEINLINE bool FHTNExecutionContext::GetParameterValue<bool>(FName Key, const 
 }
 
 template<>
-FORCEINLINE int32 FHTNExecutionContext::GetParameterValue<int32>(FName Key, const int32& DefaultValue) const
+FORCEINLINE int32 UHTNExecutionContext::GetParameterValue<int32>(FName Key, const int32& DefaultValue) const
 {
     FHTNProperty Value;
     if (GetParameter(Key, Value) && Value.GetType() == EHTNPropertyType::Integer)
@@ -169,7 +145,7 @@ FORCEINLINE int32 FHTNExecutionContext::GetParameterValue<int32>(FName Key, cons
 }
 
 template<>
-FORCEINLINE float FHTNExecutionContext::GetParameterValue<float>(FName Key, const float& DefaultValue) const
+FORCEINLINE float UHTNExecutionContext::GetParameterValue<float>(FName Key, const float& DefaultValue) const
 {
     FHTNProperty Value;
     if (GetParameter(Key, Value) && Value.GetType() == EHTNPropertyType::Float)
@@ -180,7 +156,7 @@ FORCEINLINE float FHTNExecutionContext::GetParameterValue<float>(FName Key, cons
 }
 
 template<>
-FORCEINLINE FString FHTNExecutionContext::GetParameterValue<FString>(FName Key, const FString& DefaultValue) const
+FORCEINLINE FString UHTNExecutionContext::GetParameterValue<FString>(FName Key, const FString& DefaultValue) const
 {
     FHTNProperty Value;
     if (GetParameter(Key, Value) && Value.GetType() == EHTNPropertyType::String)
@@ -191,7 +167,7 @@ FORCEINLINE FString FHTNExecutionContext::GetParameterValue<FString>(FName Key, 
 }
 
 template<>
-FORCEINLINE FName FHTNExecutionContext::GetParameterValue<FName>(FName Key, const FName& DefaultValue) const
+FORCEINLINE FName UHTNExecutionContext::GetParameterValue<FName>(FName Key, const FName& DefaultValue) const
 {
     FHTNProperty Value;
     if (GetParameter(Key, Value) && Value.GetType() == EHTNPropertyType::Name)
@@ -202,7 +178,7 @@ FORCEINLINE FName FHTNExecutionContext::GetParameterValue<FName>(FName Key, cons
 }
 
 template<>
-FORCEINLINE UObject* FHTNExecutionContext::GetParameterValue<UObject*>(FName Key, UObject* const& DefaultValue) const
+FORCEINLINE UObject* UHTNExecutionContext::GetParameterValue<UObject*>(FName Key, UObject* const& DefaultValue) const
 {
     FHTNProperty Value;
     if (GetParameter(Key, Value) && Value.GetType() == EHTNPropertyType::Object)
@@ -213,7 +189,7 @@ FORCEINLINE UObject* FHTNExecutionContext::GetParameterValue<UObject*>(FName Key
 }
 
 template<>
-FORCEINLINE FVector FHTNExecutionContext::GetParameterValue<FVector>(FName Key, const FVector& DefaultValue) const
+FORCEINLINE FVector UHTNExecutionContext::GetParameterValue<FVector>(FName Key, const FVector& DefaultValue) const
 {
     FHTNProperty Value;
     if (GetParameter(Key, Value) && Value.GetType() == EHTNPropertyType::Vector)
@@ -224,43 +200,43 @@ FORCEINLINE FVector FHTNExecutionContext::GetParameterValue<FVector>(FName Key, 
 }
 
 template<>
-FORCEINLINE void FHTNExecutionContext::SetParameterValue<bool>(FName Key, const bool& Value)
+FORCEINLINE void UHTNExecutionContext::SetParameterValue<bool>(FName Key, const bool& Value)
 {
     SetParameter(Key, FHTNProperty(Value));
 }
 
 template<>
-FORCEINLINE void FHTNExecutionContext::SetParameterValue<int32>(FName Key, const int32& Value)
+FORCEINLINE void UHTNExecutionContext::SetParameterValue<int32>(FName Key, const int32& Value)
 {
     SetParameter(Key, FHTNProperty(Value));
 }
 
 template<>
-FORCEINLINE void FHTNExecutionContext::SetParameterValue<float>(FName Key, const float& Value)
+FORCEINLINE void UHTNExecutionContext::SetParameterValue<float>(FName Key, const float& Value)
 {
     SetParameter(Key, FHTNProperty(Value));
 }
 
 template<>
-FORCEINLINE void FHTNExecutionContext::SetParameterValue<FString>(FName Key, const FString& Value)
+FORCEINLINE void UHTNExecutionContext::SetParameterValue<FString>(FName Key, const FString& Value)
 {
     SetParameter(Key, FHTNProperty(Value));
 }
 
 template<>
-FORCEINLINE void FHTNExecutionContext::SetParameterValue<FName>(FName Key, const FName& Value)
+FORCEINLINE void UHTNExecutionContext::SetParameterValue<FName>(FName Key, const FName& Value)
 {
     SetParameter(Key, FHTNProperty(Value));
 }
 
 template<>
-FORCEINLINE void FHTNExecutionContext::SetParameterValue<UObject*>(FName Key, UObject* const& Value)
+FORCEINLINE void UHTNExecutionContext::SetParameterValue<UObject*>(FName Key, UObject* const& Value)
 {
     SetParameter(Key, FHTNProperty(Value));
 }
 
 template<>
-FORCEINLINE void FHTNExecutionContext::SetParameterValue<FVector>(FName Key, const FVector& Value)
+FORCEINLINE void UHTNExecutionContext::SetParameterValue<FVector>(FName Key, const FVector& Value)
 {
     SetParameter(Key, FHTNProperty(Value));
 }

@@ -4,7 +4,7 @@
 #include "Misc/AutomationTest.h"
 #include "HTNDFSPlanner.h"
 #include "HTNWorldStateStruct.h"
-#include "HTNPrimitiveTask.h"
+#include "Tasks/HTNPrimitiveTask.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 

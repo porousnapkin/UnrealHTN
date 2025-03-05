@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "HTNPlan.h"
-#include "HTNTask.h"
-#include "HTNPrimitiveTask.h"
+#include "Tasks/HTNTask.h"
+#include "Tasks/HTNPrimitiveTask.h"
 #include "HTNPlanExecutor.generated.h"
 
 /**
@@ -64,12 +64,12 @@ public:
      * Start executing a plan.
      * 
      * @param InPlan - The plan to execute
-     * @param WorldState - The initial world state to use
+     * @param ExecutionContext - The initial world state to use
      * @param InOwner - The actor that owns this plan execution (typically the agent)
      * @return True if execution started successfully, false otherwise
      */
     UFUNCTION(BlueprintCallable, Category = "HTN|Execution")
-    bool StartPlan(const FHTNPlan& InPlan, UHTNWorldState* WorldState, AActor* InOwner = nullptr);
+    bool StartPlan(const FHTNPlan& InPlan, UHTNExecutionContext* ExecutionContext, AActor* InOwner = nullptr);
 
     /**
      * Pause the execution of the current plan.
@@ -269,6 +269,10 @@ protected:
     /** Tasks that are currently executing (for parallel execution) */
     UPROPERTY(BlueprintReadOnly, Category = "HTN|Execution")
     TArray<UHTNPrimitiveTask*> ExecutingTasks;
+
+    /** Execution context */
+    UPROPERTY(BlueprintReadOnly, Category = "AI|HTN")
+    UHTNExecutionContext* ExecutionContext;
 
     /** Map of task execution start times (for timeout detection) */
     TMap<UHTNPrimitiveTask*, float> TaskStartTimes;

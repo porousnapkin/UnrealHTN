@@ -2,7 +2,7 @@
 
 #include "HTNDFSPlanner.h"
 
-#include "HTNCompoundTask.h"
+#include "Tasks/HTNCompoundTask.h"
 #include "HTNLogging.h"
 #include "HTNWorldStateStruct.h"
 

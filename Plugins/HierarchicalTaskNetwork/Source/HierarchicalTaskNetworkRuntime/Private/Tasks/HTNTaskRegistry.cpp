@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "HTNTaskRegistry.h"
-#include "HTNTaskFactory.h"
+#include "Tasks/HTNTaskRegistry.h"
+#include "Tasks/HTNTaskFactory.h"
 #include "HTNPlanner.h"
 #include "UObject/UObjectIterator.h"
 #include "UObject/UObjectHash.h"

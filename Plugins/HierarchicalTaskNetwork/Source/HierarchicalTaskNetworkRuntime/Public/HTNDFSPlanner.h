@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "HTNPlannerBase.h"
-#include "HTNTask.h"
-#include "HTNPrimitiveTask.h"
+#include "Tasks/HTNTask.h"
+#include "Tasks/HTNPrimitiveTask.h"
 #include "HTNDFSPlanner.generated.h"
 
 /**

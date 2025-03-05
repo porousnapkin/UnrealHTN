@@ -1,7 +1,7 @@
 #include "HTNPlan.h"
 
 #include "HTNLogging.h"
-#include "HTNPrimitiveTask.h"
+#include "Tasks/HTNPrimitiveTask.h"
 
 FHTNPlan::FHTNPlan()
     : TotalCost(0.0f)

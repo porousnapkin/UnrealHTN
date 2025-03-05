@@ -1,8 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "HTNTaskFactory.h"
-#include "HTNPrimitiveTask.h"
-#include "HTNCompoundTask.h"
+#include "Tasks/HTNTaskFactory.h"
+#include "Tasks/HTNPrimitiveTask.h"
+#include "Tasks/HTNCompoundTask.h"
 #include "HTNPlanner.h"
 #include "UObject/UObjectGlobals.h"
 

@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "HierarchicalTaskNetworkRuntime.h"
-#include "HTNTaskRegistry.h"
+#include "Tasks/HTNTaskRegistry.h"
 #include "HTNLogging.h"
 
 #define LOCTEXT_NAMESPACE "FHierarchicalTaskNetworkModule"

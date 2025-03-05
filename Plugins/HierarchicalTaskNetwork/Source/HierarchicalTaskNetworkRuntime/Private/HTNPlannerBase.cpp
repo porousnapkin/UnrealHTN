@@ -1,6 +1,6 @@
 #include "HTNPlannerBase.h"
 #include "HTNLogging.h"
-#include "HTNPrimitiveTask.h"
+#include "Tasks/HTNPrimitiveTask.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
 #include "Serialization/JsonReader.h"

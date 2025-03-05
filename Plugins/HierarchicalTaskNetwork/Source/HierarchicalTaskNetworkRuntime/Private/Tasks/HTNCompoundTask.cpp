@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "HTNCompoundTask.h"
-#include "HTNPrimitiveTask.h"
+#include "Tasks/HTNCompoundTask.h"
+#include "Tasks/HTNPrimitiveTask.h"
 
 UHTNCompoundTask::UHTNCompoundTask()
     : Super()

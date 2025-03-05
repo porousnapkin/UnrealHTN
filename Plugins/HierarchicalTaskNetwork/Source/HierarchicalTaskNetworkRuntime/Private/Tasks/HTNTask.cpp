@@ -1,8 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "HTNTask.h"
+#include "Tasks/HTNTask.h"
 #include "HTNWorldStateStruct.h"
-#include "HTNPrimitiveTask.h"
+#include "Tasks/HTNPrimitiveTask.h"
 
 UHTNTask::UHTNTask()
 	: TaskID(FGuid::NewGuid())

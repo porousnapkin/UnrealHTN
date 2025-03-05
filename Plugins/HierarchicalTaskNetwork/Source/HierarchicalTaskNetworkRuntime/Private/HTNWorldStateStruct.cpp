@@ -1,22 +1,36 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "HTNWorldStateStruct.h"
 
 // FHTNWorldState Implementation
 
 FHTNWorldStateStruct::FHTNWorldStateStruct(const TMap<FName, FHTNProperty>& InProperties)
 	: Properties(InProperties)
+	, OwnerActor(nullptr)
+{
+}
+
+FHTNWorldStateStruct::FHTNWorldStateStruct(AActor* InOwnerActor)
+	: OwnerActor(InOwnerActor)
+{
+}
+
+FHTNWorldStateStruct::FHTNWorldStateStruct(AActor* InOwnerActor, const TMap<FName, FHTNProperty>& InProperties)
+	: Properties(InProperties)
+	, OwnerActor(InOwnerActor)
 {
 }
 
 FHTNWorldStateStruct::FHTNWorldStateStruct(const FHTNWorldStateStruct& Other)
 	: Properties(Other.Properties)
+	, OwnerActor(Other.OwnerActor)
 {
 }
 
 FHTNWorldStateStruct::FHTNWorldStateStruct(FHTNWorldStateStruct&& Other) noexcept
 	: Properties(MoveTemp(Other.Properties))
+	, OwnerActor(Other.OwnerActor)
 {
+	// Clear the moved-from object's owner to avoid double deletion issues
+	Other.OwnerActor = nullptr;
 }
 
 FHTNWorldStateStruct& FHTNWorldStateStruct::operator=(const FHTNWorldStateStruct& Other)
@@ -24,6 +38,7 @@ FHTNWorldStateStruct& FHTNWorldStateStruct::operator=(const FHTNWorldStateStruct
 	if (this != &Other)
 	{
 		Properties = Other.Properties;
+		OwnerActor = Other.OwnerActor;
 	}
 	return *this;
 }
@@ -33,6 +48,10 @@ FHTNWorldStateStruct& FHTNWorldStateStruct::operator=(FHTNWorldStateStruct&& Oth
 	if (this != &Other)
 	{
 		Properties = MoveTemp(Other.Properties);
+		OwnerActor = Other.OwnerActor;
+		
+		// Clear the moved-from object's owner to avoid double deletion issues
+		Other.OwnerActor = nullptr;
 	}
 	return *this;
 }
@@ -74,11 +93,13 @@ bool FHTNWorldStateStruct::RemoveProperty(FName Key)
 
 FHTNWorldStateStruct FHTNWorldStateStruct::Clone() const
 {
-	return FHTNWorldStateStruct(*this);
+	// Create a new world state with the same properties and owner
+	return FHTNWorldStateStruct(OwnerActor, Properties);
 }
 
 bool FHTNWorldStateStruct::Equals(const FHTNWorldStateStruct& Other) const
 {
+	// Note: We don't compare owners because we're focusing on property equality
 	if (Properties.Num() != Other.Properties.Num())
 	{
 		return false;
@@ -98,7 +119,8 @@ bool FHTNWorldStateStruct::Equals(const FHTNWorldStateStruct& Other) const
 
 FHTNWorldStateStruct FHTNWorldStateStruct::CreateDifference(const FHTNWorldStateStruct& Other) const
 {
-	FHTNWorldStateStruct Difference;
+	// Create a world state for the differences with the same owner
+	FHTNWorldStateStruct Difference(OwnerActor);
 
 	// Add properties that are different or don't exist in Other
 	for (const auto& Pair : Properties)
@@ -133,6 +155,10 @@ FString FHTNWorldStateStruct::ToString() const
 {
 	FString Result = TEXT("WorldState {\n");
 	
+	// Add owner information
+	Result += FString::Printf(TEXT("  Owner: %s\n"), OwnerActor ? *OwnerActor->GetName() : TEXT("None"));
+	
+	// Add properties
 	TArray<FName> SortedNames = GetPropertyNames();
 	SortedNames.Sort([](const FName& A, const FName& B) { return A.LexicalLess(B); });
 	

@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "HTNPlanExecutor.h"
+
+#include "HTNExecutionContext.h"
 #include "HTNLogging.h"
 
 UHTNPlanExecutor::UHTNPlanExecutor()
@@ -52,7 +54,7 @@ void UHTNPlanExecutor::Tick(float DeltaTime)
         // Tick the current task
         if (CurrentTask && CurrentTask->GetStatus() == EHTNTaskStatus::InProgress)
         {
-            EHTNTaskStatus NewStatus = CurrentTask->TickTask(CurrentWorldState, DeltaTime);
+            EHTNTaskStatus NewStatus = CurrentTask->TickTask(ExecutionContext, DeltaTime);
             
             // If the task status changed during the tick, handle it
             if (NewStatus != EHTNTaskStatus::InProgress)
@@ -77,7 +79,7 @@ void UHTNPlanExecutor::Tick(float DeltaTime)
         {
             if (Task && Task->GetStatus() == EHTNTaskStatus::InProgress)
             {
-                EHTNTaskStatus NewStatus = Task->TickTask(CurrentWorldState, DeltaTime);
+                EHTNTaskStatus NewStatus = Task->TickTask(ExecutionContext, DeltaTime);
                 
                 // If the task status changed during the tick, handle it
                 if (NewStatus != EHTNTaskStatus::InProgress)
@@ -114,7 +116,7 @@ void UHTNPlanExecutor::Tick(float DeltaTime)
                     if (Task && Task->IsApplicable(CurrentWorldState))
                     {
                         // Start this task
-                        if (Task->Execute(CurrentWorldState))
+                        if (Task->Execute(ExecutionContext))
                         {
                             ExecutingTasks.Add(Task);
                             TaskStartTimes.Add(Task, CurrentTime);
@@ -157,7 +159,7 @@ void UHTNPlanExecutor::Tick(float DeltaTime)
                         Task->IsApplicable(CurrentWorldState))
                     {
                         // Start this task
-                        if (Task->Execute(CurrentWorldState))
+                        if (Task->Execute(ExecutionContext))
                         {
                             ExecutingTasks.Add(Task);
                             TaskStartTimes.Add(Task, CurrentTime);
@@ -194,7 +196,7 @@ TStatId UHTNPlanExecutor::GetStatId() const
     RETURN_QUICK_DECLARE_CYCLE_STAT(UHTNPlanExecutor, STATGROUP_Tickables);
 }
 
-bool UHTNPlanExecutor::StartPlan(const FHTNPlan& InPlan, UHTNWorldState* WorldState, AActor* InOwner)
+bool UHTNPlanExecutor::StartPlan(const FHTNPlan& InPlan, UHTNExecutionContext* inExecutionContext, AActor* InOwner)
 {
     // Check if a plan is already executing
     if (bIsExecuting)
@@ -210,7 +212,7 @@ bool UHTNPlanExecutor::StartPlan(const FHTNPlan& InPlan, UHTNWorldState* WorldSt
         return false;
     }
     
-    if (!WorldState)
+    if (!ExecutionContext)
     {
         LogExecution(TEXT("Cannot start plan - world state is null"), ELogVerbosity::Warning);
         return false;
@@ -218,7 +220,8 @@ bool UHTNPlanExecutor::StartPlan(const FHTNPlan& InPlan, UHTNWorldState* WorldSt
     
     // Set up the execution
     CurrentPlan = InPlan;
-    CurrentWorldState = WorldState;
+    ExecutionContext = ExecutionContext;
+    CurrentWorldState = ExecutionContext->GetWorldState();
     OwnerActor = InOwner;
     bIsExecuting = true;
     bIsPaused = false;
@@ -255,7 +258,7 @@ bool UHTNPlanExecutor::StartPlan(const FHTNPlan& InPlan, UHTNWorldState* WorldSt
             if (Task && Task->IsApplicable(CurrentWorldState))
             {
                 // Start this task
-                if (Task->Execute(CurrentWorldState))
+                if (Task->Execute(ExecutionContext))
                 {
                     ExecutingTasks.Add(Task);
                     TaskStartTimes.Add(Task, CurrentTime);
@@ -297,7 +300,7 @@ bool UHTNPlanExecutor::StartPlan(const FHTNPlan& InPlan, UHTNWorldState* WorldSt
                 Task->IsApplicable(CurrentWorldState))
             {
                 // Start this task
-                if (Task->Execute(CurrentWorldState))
+                if (Task->Execute(ExecutionContext))
                 {
                     ExecutingTasks.Add(Task);
                     TaskStartTimes.Add(Task, CurrentTime);
@@ -379,7 +382,7 @@ bool UHTNPlanExecutor::AbortPlan(bool bFailTasks)
     {
         if (Task && Task->GetStatus() == EHTNTaskStatus::InProgress)
         {
-            Task->AbortTask(CurrentWorldState);
+            Task->AbortTask(ExecutionContext);
             
             if (bFailTasks)
             {
@@ -545,7 +548,7 @@ bool UHTNPlanExecutor::ExecuteNextTask()
         float CurrentTime = FPlatformTime::Seconds();
         TaskStartTimes.Add(NextTask, CurrentTime);
         
-        if (NextTask->Execute(CurrentWorldState))
+        if (NextTask->Execute(ExecutionContext))
         {
             // Task execution started successfully
             OnTaskStarted.Broadcast(CurrentPlan, NextTask);
@@ -683,7 +686,7 @@ void UHTNPlanExecutor::CheckTaskTimeouts(float CurrentTime)
             *Task->ToString(), MaxTaskExecutionTime), ELogVerbosity::Warning);
         
         // Abort the task
-        Task->AbortTask(CurrentWorldState);
+        Task->AbortTask(ExecutionContext);
         
         // Broadcast task timeout event
         OnTaskTimeout.Broadcast(CurrentPlan, Task);
@@ -784,7 +787,7 @@ void UHTNPlanExecutor::ApplyTaskEffects(UHTNPrimitiveTask* Task)
     }
     
     LogExecution(FString::Printf(TEXT("Applying effects of task %s"), *Task->ToString()));
-    Task->ApplyEffects(CurrentWorldState);
+    Task->ApplyEffects(ExecutionContext);
 }
 
 void UHTNPlanExecutor::LogExecution(const FString& Message, ELogVerbosity::Type Verbosity)

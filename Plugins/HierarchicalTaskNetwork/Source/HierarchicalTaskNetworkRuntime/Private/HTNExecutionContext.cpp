@@ -1,29 +1,19 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "HTNExecutionContext.h"
 #include "HTNProperty.h"
 #include "HTNLogging.h"
 
-FHTNExecutionContext::FHTNExecutionContext()
-    : OwnerActor(nullptr)
-    , WorldState(nullptr)
+UHTNExecutionContext::UHTNExecutionContext()
+    : WorldState(nullptr)
 {
 }
 
-FHTNExecutionContext::FHTNExecutionContext(AActor* InOwnerActor)
-    : OwnerActor(InOwnerActor)
-    , WorldState(nullptr)
-{
-}
-
-FHTNExecutionContext::FHTNExecutionContext(const FHTNExecutionContext& Other)
-    : OwnerActor(Other.OwnerActor)
-    , Parameters(Other.Parameters)
+UHTNExecutionContext::UHTNExecutionContext(const UHTNExecutionContext* Other)
+    : Parameters(Other->Parameters)
 {
     // Deep copy the world state if it exists
-    if (Other.WorldState)
+    if (Other->WorldState)
     {
-        WorldState = Other.WorldState->Clone();
+        WorldState = Other->WorldState->Clone();
     }
     else
     {
@@ -31,71 +21,12 @@ FHTNExecutionContext::FHTNExecutionContext(const FHTNExecutionContext& Other)
     }
 }
 
-FHTNExecutionContext::FHTNExecutionContext(FHTNExecutionContext&& Other) noexcept
-    : OwnerActor(Other.OwnerActor)
-    , WorldState(Other.WorldState)
-    , Parameters(MoveTemp(Other.Parameters))
-{
-    // Reset the moved-from object to a valid state
-    Other.OwnerActor = nullptr;
-    Other.WorldState = nullptr;
-}
-
-FHTNExecutionContext& FHTNExecutionContext::operator=(const FHTNExecutionContext& Other)
-{
-    if (this != &Other)
-    {
-        OwnerActor = Other.OwnerActor;
-        Parameters = Other.Parameters;
-        
-        // Deep copy the world state
-        if (WorldState)
-        {
-            // Clean up existing world state
-            WorldState = nullptr;
-        }
-        
-        if (Other.WorldState)
-        {
-            WorldState = Other.WorldState->Clone();
-        }
-    }
-    return *this;
-}
-
-FHTNExecutionContext& FHTNExecutionContext::operator=(FHTNExecutionContext&& Other) noexcept
-{
-    if (this != &Other)
-    {
-        // Clean up existing world state if needed
-        if (WorldState)
-        {
-            WorldState = nullptr;
-        }
-        
-        // Move data from other context
-        OwnerActor = Other.OwnerActor;
-        WorldState = Other.WorldState;
-        Parameters = MoveTemp(Other.Parameters);
-        
-        // Reset the moved-from object to a valid state
-        Other.OwnerActor = nullptr;
-        Other.WorldState = nullptr;
-    }
-    return *this;
-}
-
-void FHTNExecutionContext::SetOwner(AActor* InOwnerActor)
-{
-    OwnerActor = InOwnerActor;
-}
-
-void FHTNExecutionContext::SetWorldState(UHTNWorldState* InWorldState)
+void UHTNExecutionContext::SetWorldState(UHTNWorldState* InWorldState)
 {
     WorldState = InWorldState;
 }
 
-bool FHTNExecutionContext::GetParameter(FName Key, FHTNProperty& OutValue) const
+bool UHTNExecutionContext::GetParameter(FName Key, FHTNProperty& OutValue) const
 {
     if (const FHTNProperty* Property = Parameters.Find(Key))
     {
@@ -105,40 +36,36 @@ bool FHTNExecutionContext::GetParameter(FName Key, FHTNProperty& OutValue) const
     return false;
 }
 
-void FHTNExecutionContext::SetParameter(FName Key, const FHTNProperty& Value)
+void UHTNExecutionContext::SetParameter(FName Key, const FHTNProperty& Value)
 {
     Parameters.Add(Key, Value);
 }
 
-bool FHTNExecutionContext::HasParameter(FName Key) const
+bool UHTNExecutionContext::HasParameter(FName Key) const
 {
     return Parameters.Contains(Key);
 }
 
-bool FHTNExecutionContext::RemoveParameter(FName Key)
+bool UHTNExecutionContext::RemoveParameter(FName Key)
 {
     return Parameters.Remove(Key) > 0;
 }
 
-TArray<FName> FHTNExecutionContext::GetParameterNames() const
+TArray<FName> UHTNExecutionContext::GetParameterNames() const
 {
     TArray<FName> Names;
     Parameters.GetKeys(Names);
     return Names;
 }
 
-void FHTNExecutionContext::ClearParameters()
+void UHTNExecutionContext::ClearParameters()
 {
     Parameters.Empty();
 }
 
-FString FHTNExecutionContext::ToString() const
+FString UHTNExecutionContext::ToString() const
 {
     FString Result = TEXT("HTN Execution Context:\n");
-    
-    // Owner info
-    Result += FString::Printf(TEXT("Owner: %s\n"), 
-        OwnerActor ? *OwnerActor->GetName() : TEXT("None"));
     
     // World state info
     Result += TEXT("World State: ");
@@ -174,12 +101,9 @@ FString FHTNExecutionContext::ToString() const
     return Result;
 }
 
-FHTNExecutionContext FHTNExecutionContext::Clone() const
+UHTNExecutionContext UHTNExecutionContext::Clone() const
 {
-    FHTNExecutionContext ClonedContext;
-    
-    // Copy the owner reference
-    ClonedContext.OwnerActor = OwnerActor;
+    UHTNExecutionContext ClonedContext;
     
     // Deep copy the world state if it exists
     if (WorldState)

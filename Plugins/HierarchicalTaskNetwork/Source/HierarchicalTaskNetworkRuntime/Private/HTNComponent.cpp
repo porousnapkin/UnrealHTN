@@ -1,8 +1,6 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "HTNComponent.h"
 #include "HTNLogging.h"
-#include "HTNTask.h"
+#include "Tasks/HTNTask.h"
 #include "HTNPlanExecutor.h"
 #include "HTNDFSPlanner.h"
 
@@ -99,6 +97,16 @@ bool UHTNComponent::GeneratePlan(const TArray<UHTNTask*>& GoalTasks)
     {
         PlanExecutor->AbortPlan(false);
     }
+
+    // Make sure the world state has the owner set
+    if (!WorldState->GetOwner())
+    {
+        WorldState->SetOwner(GetOwner());
+    }
+
+    //Create the execution context for this plan.
+    ExecutionContext = NewObject<UHTNExecutionContext>();
+    ExecutionContext->SetWorldState(WorldState);
     
     // Create a planner
     UHTNDFSPlanner* Planner = NewObject<UHTNDFSPlanner>(this);
@@ -133,7 +141,7 @@ bool UHTNComponent::GeneratePlan(const TArray<UHTNTask*>& GoalTasks)
         // Start executing the plan
         if (PlanExecutor)
         {
-            return PlanExecutor->StartPlan(CurrentPlan, WorldState, GetOwner());
+            return PlanExecutor->StartPlan(CurrentPlan, ExecutionContext, GetOwner());
         }
         else
         {
@@ -193,7 +201,7 @@ bool UHTNComponent::TryReplan(const TArray<UHTNTask*>& GoalTasks)
     return GeneratePlan(GoalTasks);
 }
 
-const FHTNExecutionContext& UHTNComponent::GetExecutionContext() const
+UHTNExecutionContext* UHTNComponent::GetExecutionContext() const
 {
     return ExecutionContext;
 }
@@ -207,10 +215,16 @@ void UHTNComponent::SetWorldState(UHTNWorldState* InWorldState)
 {
     WorldState = InWorldState;
     
-    // Update the execution context
-    if (WorldState)
+    // Make sure the world state has the owner set
+    if (WorldState && !WorldState->GetOwner())
     {
-        ExecutionContext.SetWorldState(WorldState);
+        WorldState->SetOwner(GetOwner());
+    }
+    
+    // Update the execution context
+    if (WorldState && ExecutionContext)
+    {
+        ExecutionContext->SetWorldState(WorldState);
     }
 }
 
@@ -254,7 +268,14 @@ FString UHTNComponent::GetDebugInfo() const
     
     // Execution context info
     Result += TEXT("\nExecution Context:\n");
-    Result += ExecutionContext.ToString();
+    if (ExecutionContext)
+    {
+        Result += ExecutionContext->ToString();
+    }
+    else
+    {
+        Result += TEXT("  (None)\n");
+    }
     
     // Plan info
     Result += TEXT("\nCurrent Plan:\n");
@@ -287,12 +308,21 @@ void UHTNComponent::Initialize()
     if (!WorldState)
     {
         WorldState = NewObject<UHTNWorldState>(this);
+        WorldState->SetOwner(GetOwner());
         DebugMessage(TEXT("Created new world state"));
+    }
+    else if (!WorldState->GetOwner())
+    {
+        // Ensure owner is set
+        WorldState->SetOwner(GetOwner());
     }
     
     // Set up the execution context
-    ExecutionContext.SetOwner(GetOwner());
-    ExecutionContext.SetWorldState(WorldState);
+    if (!ExecutionContext)
+    {
+        ExecutionContext = NewObject<UHTNExecutionContext>(this);
+    }
+    ExecutionContext->SetWorldState(WorldState);
     
     // Create the plan executor
     PlanExecutor = NewObject<UHTNPlanExecutor>(this);

@@ -1,7 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "HTNPrimitiveTask.h"
+#include "Tasks/HTNPrimitiveTask.h"
 
+#include "HTNExecutionContext.h"
 #include "HTNWorldStateStruct.h"
 
 UHTNPrimitiveTask::UHTNPrimitiveTask()
@@ -60,7 +61,7 @@ bool UHTNPrimitiveTask::Decompose(const UHTNWorldState* WorldState, TArray<UHTNP
     return true;
 }
 
-bool UHTNPrimitiveTask::Execute(UHTNWorldState* WorldState)
+bool UHTNPrimitiveTask::Execute(UHTNExecutionContext* ExecutionContext)
 {
     // Can't execute if already executing
     if (bIsExecuting)
@@ -70,7 +71,7 @@ bool UHTNPrimitiveTask::Execute(UHTNWorldState* WorldState)
     }
 
     // Check if the task is applicable in the current world state
-    if (!IsApplicable(WorldState))
+    if (!IsApplicable(ExecutionContext->GetWorldState()))
     {
         UE_LOG(LogHTNTask, Warning, TEXT("Task is not applicable in the current world state: %s"), *ToString());
         SetStatus(EHTNTaskStatus::Failed);
@@ -86,7 +87,7 @@ bool UHTNPrimitiveTask::Execute(UHTNWorldState* WorldState)
     BroadcastTaskEvent(Status);
 
     // Execute the task and get its initial status
-    EHTNTaskStatus InitialStatus = ExecuteTask(WorldState);
+    EHTNTaskStatus InitialStatus = ExecuteTask(ExecutionContext);
     
     // If the task completed immediately, update the status
     if (InitialStatus != EHTNTaskStatus::InProgress)
@@ -94,7 +95,7 @@ bool UHTNPrimitiveTask::Execute(UHTNWorldState* WorldState)
         SetStatus(InitialStatus);
         
         // End the task if it completed immediately
-        EndTask(WorldState, InitialStatus);
+        EndTask(ExecutionContext, InitialStatus);
         bIsExecuting = false;
     }
 
@@ -112,14 +113,14 @@ EHTNTaskStatus UHTNPrimitiveTask::GetStatus() const
     return Status;
 }
 
-EHTNTaskStatus UHTNPrimitiveTask::ExecuteTask_Implementation(UHTNWorldState* WorldState)
+EHTNTaskStatus UHTNPrimitiveTask::ExecuteTask_Implementation(UHTNExecutionContext* ExecutionContext)
 {
     // Base implementation does nothing and succeeds immediately
     UE_LOG(LogHTNTask, Verbose, TEXT("ExecuteTask not implemented for primitive task: %s - using default success behavior"), *ToString());
     return EHTNTaskStatus::Succeeded;
 }
 
-EHTNTaskStatus UHTNPrimitiveTask::TickTask_Implementation(UHTNWorldState* WorldState, float DeltaTime)
+EHTNTaskStatus UHTNPrimitiveTask::TickTask_Implementation(UHTNExecutionContext* ExecutionContext, float DeltaTime)
 {
     // Base implementation just maintains the current status
     // For tasks that execute over time, this should be overridden to update the task's state
@@ -141,7 +142,7 @@ EHTNTaskStatus UHTNPrimitiveTask::TickTask_Implementation(UHTNWorldState* WorldS
     return Status;
 }
 
-void UHTNPrimitiveTask::EndTask_Implementation(UHTNWorldState* WorldState, EHTNTaskStatus FinalStatus)
+void UHTNPrimitiveTask::EndTask_Implementation(UHTNExecutionContext* ExecutionContext, EHTNTaskStatus FinalStatus)
 {
     // Base implementation does nothing
     // Derived classes should override this to perform cleanup
@@ -149,11 +150,11 @@ void UHTNPrimitiveTask::EndTask_Implementation(UHTNWorldState* WorldState, EHTNT
     // If the task succeeded, apply its effects to the world state
     if (FinalStatus == EHTNTaskStatus::Succeeded)
     {
-        ApplyEffects(WorldState);
+        ApplyEffects(ExecutionContext);
     }
 }
 
-void UHTNPrimitiveTask::AbortTask(UHTNWorldState* WorldState)
+void UHTNPrimitiveTask::AbortTask(UHTNExecutionContext* ExecutionContext)
 {
     // Only abort if the task is executing
     if (bIsExecuting)
@@ -164,21 +165,21 @@ void UHTNPrimitiveTask::AbortTask(UHTNWorldState* WorldState)
         SetStatus(EHTNTaskStatus::Failed);
         
         // End the task
-        EndTask(WorldState, EHTNTaskStatus::Failed);
+        EndTask(nullptr, EHTNTaskStatus::Failed);
         
         // Update execution state
         bIsExecuting = false;
     }
 }
 
-void UHTNPrimitiveTask::ApplyEffects(UHTNWorldState* WorldState) const
+void UHTNPrimitiveTask::ApplyEffects(UHTNExecutionContext* ExecutionContext) const
 {
     // Apply all effects to the world state
     for (const UHTNEffect* Effect : Effects)
     {
         if (Effect)
         {
-            Effect->ApplyEffect(WorldState);
+            Effect->ApplyEffect(ExecutionContext->GetWorldState());
         }
     }
 }
