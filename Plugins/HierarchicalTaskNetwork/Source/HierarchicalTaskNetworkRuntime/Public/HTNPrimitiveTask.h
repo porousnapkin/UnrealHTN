@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "HTNTask.h"
-#include "HTNCondition.h"
-#include "HTNEffect.h"
+#include "Conditions/HTNCondition.h"
+#include "Effects/HTNEffect.h"
 #include "HTNPrimitiveTask.generated.h"
 
 /**

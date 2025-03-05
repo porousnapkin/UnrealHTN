@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "HTNCondition.h"
+#include "Conditions/HTNCondition.h"
 #include "HTNMethod.generated.h"
 
 class UHTNTask;

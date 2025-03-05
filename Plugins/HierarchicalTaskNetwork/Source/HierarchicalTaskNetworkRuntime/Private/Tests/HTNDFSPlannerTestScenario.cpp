@@ -2,14 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
-#include "Tests/AutomationCommon.h"
 #include "HTNDFSPlanner.h"
 #include "HTNWorldStateStruct.h"
-#include "HTNCompoundTask.h"
 #include "HTNPrimitiveTask.h"
-#include "HTNCondition.h"
-#include "HTNEffect.h"
-#include "HTNMethod.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 

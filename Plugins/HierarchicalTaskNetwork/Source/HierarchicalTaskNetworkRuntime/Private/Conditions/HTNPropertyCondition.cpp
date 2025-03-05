@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "HTNPropertyCondition.h"
+#include "Conditions/HTNPropertyCondition.h"
+
 #include "HTNWorldStateStruct.h"
 #include "HTNLogging.h"
 

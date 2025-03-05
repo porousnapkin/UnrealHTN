@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "HTNComparisonCondition.h"
+
+#include "Conditions/HTNComparisonCondition.h"
+
 #include "HTNWorldStateStruct.h"
 #include "HTNLogging.h"
 

@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "HTNCondition.h"
+#include "Conditions/HTNCondition.h"
+
 #include "HTNLogging.h"
 
 UHTNCondition::UHTNCondition()

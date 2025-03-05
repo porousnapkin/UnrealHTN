@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "HTNWorldStateStruct.h"
 #include "HTNEffect.generated.h"
 
 /**
  * Base class for HTN effects.
  * Effects represent changes to the world state that result from executing a task.
- * This is a forward declaration and will be fully implemented in a later step.
  */
-UCLASS(BlueprintType, Blueprintable)
+UCLASS(Abstract, BlueprintType, Blueprintable, EditInlineNew)
 class HIERARCHICALTASKNETWORKRUNTIME_API UHTNEffect : public UObject
 {
 	GENERATED_BODY()
@@ -36,4 +36,18 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "HTN|Effect")
 	FString GetDescription() const;
 	virtual FString GetDescription_Implementation() const;
+
+	/**
+	 * Validates that this effect is set up correctly.
+	 * 
+	 * @return True if the effect is valid, false otherwise
+	 */
+	UFUNCTION(BlueprintNativeEvent, Category = "HTN|Effect")
+	bool ValidateEffect() const;
+	virtual bool ValidateEffect_Implementation() const;
+    
+protected:
+	/** Debug color for visualization */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect|Debug")
+	FLinearColor DebugColor;
 };
