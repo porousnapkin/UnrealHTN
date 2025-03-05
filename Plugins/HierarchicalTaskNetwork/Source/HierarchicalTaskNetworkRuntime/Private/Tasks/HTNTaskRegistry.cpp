@@ -3,6 +3,8 @@
 #include "Tasks/HTNTaskRegistry.h"
 #include "Tasks/HTNTaskFactory.h"
 #include "HTNPlanner.h"
+#include "Tasks/HTNMoveToTask.h"
+#include "Tasks/HTNPrintLogTask.h"
 #include "UObject/UObjectIterator.h"
 #include "UObject/UObjectHash.h"
 #include "UObject/Package.h"
@@ -57,9 +59,8 @@ void UHTNTaskRegistry::RegisterBuiltInTasks()
     UE_LOG(LogHTNPlannerPlugin, Log, TEXT("Registering built-in HTN tasks"));
 
     // Register primitive tasks
-    // These will be added as implementations of primitive tasks are created
-    // Example:
-    // RegisterPrimitiveTask(UHTNMoveToTask::StaticClass(), TEXT("Navigation"));
+    RegisterPrimitiveTask(UHTNMoveToTask::StaticClass(), TEXT("Navigation"));
+    RegisterPrimitiveTask(UHTNPrintLogTask::StaticClass(), TEXT("Debug"));
 
     // Register compound tasks
     // These will be added as implementations of compound tasks are created
