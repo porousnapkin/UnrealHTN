@@ -11,7 +11,7 @@
  * Conditions represent checks that must be satisfied for a task to be applicable.
  * This is a forward declaration and will be fully implemented in a later step.
  */
-UCLASS(Abstract, BlueprintType, Blueprintable)
+UCLASS(BlueprintType, Blueprintable)
 class HIERARCHICALTASKNETWORKRUNTIME_API UHTNCondition : public UObject
 {
 	GENERATED_BODY()

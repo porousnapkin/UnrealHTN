@@ -25,7 +25,7 @@ bool UHTNPrimitiveTask::IsApplicable(const UHTNWorldState* WorldState) const
     // Check all preconditions
     for (const UHTNCondition* Condition : Preconditions)
     {
-        if (Condition && !Condition->CheckCondition(WorldState))
+        if (IsValid(Condition) && !Condition->CheckCondition(WorldState))
         {
             // If any precondition fails, the task is not applicable
             return false;

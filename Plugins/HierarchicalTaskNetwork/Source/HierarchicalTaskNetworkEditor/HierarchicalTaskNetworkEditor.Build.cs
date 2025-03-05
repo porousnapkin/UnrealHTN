@@ -29,6 +29,7 @@ public class HierarchicalTaskNetworkEditor : ModuleRules
 				"UnrealEd",
 				"Kismet",
 				"BlueprintGraph",
+				"HierarchicalTaskNetworkRuntime",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

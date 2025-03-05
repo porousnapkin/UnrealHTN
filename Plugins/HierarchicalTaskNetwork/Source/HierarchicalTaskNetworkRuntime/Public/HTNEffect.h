@@ -11,7 +11,7 @@
  * Effects represent changes to the world state that result from executing a task.
  * This is a forward declaration and will be fully implemented in a later step.
  */
-UCLASS(Abstract, BlueprintType, Blueprintable)
+UCLASS(BlueprintType, Blueprintable)
 class HIERARCHICALTASKNETWORKRUNTIME_API UHTNEffect : public UObject
 {
 	GENERATED_BODY()
