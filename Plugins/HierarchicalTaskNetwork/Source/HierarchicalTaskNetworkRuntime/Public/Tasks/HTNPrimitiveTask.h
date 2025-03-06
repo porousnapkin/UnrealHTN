@@ -151,7 +151,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Task|Effects")
     TArray<UHTNEffect*> Effects;
 
-protected:
+   protected:
     /** Current execution status */
     UPROPERTY(BlueprintReadOnly, Category = "Task")
     EHTNTaskStatus Status;
@@ -167,6 +167,9 @@ protected:
     /** Whether this task is currently executing */
     UPROPERTY(BlueprintReadOnly, Category = "Task")
     uint8 bIsExecuting : 1;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Task")
+    UHTNExecutionContext* ActiveExecutionContext;
 
 private:
     /** Helper function to broadcast execution events */

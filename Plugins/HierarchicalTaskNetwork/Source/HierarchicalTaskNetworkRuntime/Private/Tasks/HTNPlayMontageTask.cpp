@@ -180,25 +180,25 @@ void UHTNPlayMontageTask::EndTask_Implementation(UHTNExecutionContext* Execution
 {
     Super::EndTask_Implementation(ExecutionContext, FinalStatus);
 
-    // If the montage is still playing and the task is ending, stop it
-    if (bMontageStarted && !bMontageCompleted)
+    // Get the actor
+    AActor* TargetActor = ExecutionContext ? ExecutionContext->GetOwner() : nullptr;
+    if (TargetActor)
     {
-        // Get the actor
-        AActor* TargetActor = ExecutionContext ? ExecutionContext->GetOwner() : nullptr;
-        if (TargetActor)
+        // Get the anim instance
+        UAnimInstance* AnimInstance = GetAnimInstance(TargetActor);
+        if (AnimInstance)
         {
-            // Get the anim instance
-            UAnimInstance* AnimInstance = GetAnimInstance(TargetActor);
-            if (AnimInstance)
+            // Clean up the delegate
+            UnregisterMontageEndDelegate(AnimInstance);
+
+            // If the montage is still playing and the task is ending, stop it
+            if (bMontageStarted && !bMontageCompleted)
             {
                 // If we know the montage, stop it
                 if (!bUseMontageFromWorldState && Montage)
                 {
                     AnimInstance->Montage_Stop(BlendOutTime, Montage);
                 }
-                
-                // Clean up the delegate
-                UnregisterMontageEndDelegate(AnimInstance);
             }
         }
     }

@@ -28,6 +28,10 @@ void UTestHTNComponent::BeginPlay()
 
 void UTestHTNComponent::CreateGetFoodPlan()
 {
+	// Enable visualization for this component
+	SetDebugVisualization(true);
+	CreateVisualizationComponent();
+	
 	// Initialize world state properties
     UHTNWorldState* State = GetWorldState();
     

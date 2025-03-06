@@ -63,6 +63,8 @@ bool UHTNPrimitiveTask::Decompose(const UHTNWorldState* WorldState, TArray<UHTNP
 
 bool UHTNPrimitiveTask::Execute(UHTNExecutionContext* ExecutionContext)
 {
+    ActiveExecutionContext = ExecutionContext;
+    
     // Can't execute if already executing
     if (bIsExecuting)
     {

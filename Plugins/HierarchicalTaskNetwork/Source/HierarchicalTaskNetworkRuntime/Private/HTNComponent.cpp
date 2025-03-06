@@ -1,4 +1,6 @@
 #include "HTNComponent.h"
+
+#include "HTNDebugVisualizationComponent.h"
 #include "HTNLogging.h"
 #include "Tasks/HTNTask.h"
 #include "HTNPlanExecutor.h"
@@ -18,6 +20,12 @@ UHTNComponent::UHTNComponent()
 void UHTNComponent::BeginPlay()
 {
     Super::BeginPlay();
+
+    Planner = NewObject<UHTNDFSPlanner>(const_cast<UHTNComponent*>(this));
+    if (!Planner)
+    {
+        DebugMessage(TEXT("Failed to create planner"));
+    }
     
     // Initialize the component
     Initialize();
@@ -108,14 +116,6 @@ bool UHTNComponent::GeneratePlan(const TArray<UHTNTask*>& GoalTasks)
     ExecutionContext = NewObject<UHTNExecutionContext>();
     ExecutionContext->SetWorldState(WorldState);
     
-    // Create a planner
-    UHTNDFSPlanner* Planner = NewObject<UHTNDFSPlanner>(this);
-    if (!Planner)
-    {
-        DebugMessage(TEXT("Failed to create planner"));
-        return false;
-    }
-    
     // Configure the planner
     FHTNPlanningConfig PlanConfig;
     PlanConfig.MaxSearchDepth = 20;
@@ -127,21 +127,18 @@ bool UHTNComponent::GeneratePlan(const TArray<UHTNTask*>& GoalTasks)
     
     if (PlanResult.bSuccess)
     {
-        // Store the plan
-        CurrentPlan = PlanResult.Plan;
-        
         // Save the goal tasks for potential replanning
         CurrentGoalTasks = GoalTasks;
         
         // Reset failure counter on successful planning
         ConsecutivePlanFailures = 0;
         
-        DebugMessage(FString::Printf(TEXT("Plan generated successfully with %d tasks"), CurrentPlan.Tasks.Num()));
+        DebugMessage(FString::Printf(TEXT("Plan generated successfully with %d tasks"), PlanResult.Plan.Tasks.Num()));
         
         // Start executing the plan
         if (PlanExecutor)
         {
-            return PlanExecutor->StartPlan(CurrentPlan, ExecutionContext, GetOwner());
+            return PlanExecutor->StartPlan(PlanResult.Plan, ExecutionContext, GetOwner());
         }
         else
         {
@@ -169,7 +166,7 @@ bool UHTNComponent::GeneratePlan(const TArray<UHTNTask*>& GoalTasks)
 
 bool UHTNComponent::IsPlanValid() const
 {
-    if (CurrentPlan.IsEmpty())
+    if (GetCurrentPlan().IsEmpty())
     {
         return false;
     }
@@ -179,14 +176,12 @@ bool UHTNComponent::IsPlanValid() const
         return false;
     }
     
-    // Create a planner to validate the plan
-    UHTNDFSPlanner* Planner = NewObject<UHTNDFSPlanner>(const_cast<UHTNComponent*>(this));
     if (!Planner)
     {
         return false;
     }
     
-    return Planner->ValidatePlan(CurrentPlan, WorldState);
+    return Planner->ValidatePlan(GetCurrentPlan(), WorldState);
 }
 
 bool UHTNComponent::TryReplan(const TArray<UHTNTask*>& GoalTasks)
@@ -230,7 +225,12 @@ void UHTNComponent::SetWorldState(UHTNWorldState* InWorldState)
 
 const FHTNPlan& UHTNComponent::GetCurrentPlan() const
 {
-    return CurrentPlan;
+    if (PlanExecutor)
+    {
+        return PlanExecutor->GetCurrentPlan();
+    }
+
+    return EmptyPlan;
 }
 
 bool UHTNComponent::IsExecutingPlan() const
@@ -279,9 +279,9 @@ FString UHTNComponent::GetDebugInfo() const
     
     // Plan info
     Result += TEXT("\nCurrent Plan:\n");
-    if (!CurrentPlan.IsEmpty())
+    if (!GetCurrentPlan().IsEmpty())
     {
-        Result += CurrentPlan.ToString();
+        Result += GetCurrentPlan().ToString();
     }
     else
     {
@@ -346,7 +346,7 @@ void UHTNComponent::Initialize()
 bool UHTNComponent::NeedsReplan() const
 {
     // If we don't have a plan or it's empty, we need to replan
-    if (CurrentPlan.IsEmpty())
+    if (GetCurrentPlan().IsEmpty())
     {
         return true;
     }
@@ -423,12 +423,44 @@ void UHTNComponent::DebugMessage(const FString& Message) const
     if (bDebugOutput)
     {
         UE_LOG(LogHTNPlannerPlugin, Display, TEXT("[HTNComponent] %s"), *Message);
-        
-        // You could add on-screen debug messages here if desired
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, 
-                FString::Printf(TEXT("[HTN] %s"), *Message));
-        }
     }
+}
+
+void UHTNComponent::SetDebugVisualization(bool bEnable)
+{
+    bDebugOutput = bEnable;
+    
+    // If already has a visualization component, update its state
+    if (UHTNDebugVisualizationComponent* VisComp = GetOwner()->FindComponentByClass<UHTNDebugVisualizationComponent>())
+    {
+        VisComp->bEnableVisualization = bEnable;
+    }
+}
+
+UHTNDebugVisualizationComponent* UHTNComponent::CreateVisualizationComponent()
+{
+    if (!GetOwner())
+    {
+        DebugMessage(TEXT("Cannot create visualization component: No owner actor"));
+        return nullptr;
+    }
+    
+    // Check if a visualization component already exists
+    UHTNDebugVisualizationComponent* VisComp = GetOwner()->FindComponentByClass<UHTNDebugVisualizationComponent>();
+    if (!VisComp)
+    {
+        // Create a new visualization component
+        VisComp = NewObject<UHTNDebugVisualizationComponent>(GetOwner(), UHTNDebugVisualizationComponent::StaticClass());
+        VisComp->RegisterComponent();
+        VisComp->SetHTNComponent(this);
+        VisComp->bEnableVisualization = bDebugOutput;
+        
+        DebugMessage(TEXT("Created visualization component"));
+    }
+    else
+    {
+        DebugMessage(TEXT("Visualization component already exists"));
+    }
+    
+    return VisComp;
 }

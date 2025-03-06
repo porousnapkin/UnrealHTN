@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HTNDFSPlanner.h"
 #include "Components/ActorComponent.h"
 #include "HTNWorldStateStruct.h"
 #include "HTNExecutionContext.h"
@@ -146,6 +147,22 @@ public:
     UFUNCTION(BlueprintCallable, Category = "AI|HTN|Debug")
     FString GetDebugInfo() const;
 
+     /**
+     * Enable or disable debug visualization for this component.
+     * 
+     * @param bEnable - Whether to enable debug visualization
+     */
+    UFUNCTION(BlueprintCallable, Category = "AI|HTN|Debug")
+    void SetDebugVisualization(bool bEnable);
+       
+    /**
+     * Creates a visualization component and attaches it to the owner of this component.
+     * 
+     * @return The created visualization component
+     */
+    UFUNCTION(BlueprintCallable, Category = "AI|HTN|Debug")
+    class UHTNDebugVisualizationComponent* CreateVisualizationComponent();
+
 protected:
     /** World state for planning and execution */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI|HTN")
@@ -159,15 +176,14 @@ protected:
     UPROPERTY(BlueprintReadOnly, Category = "AI|HTN")
     UHTNPlanExecutor* PlanExecutor;
 
-    /** Current plan */
-    UPROPERTY(BlueprintReadOnly, Category = "AI|HTN")
-    FHTNPlan CurrentPlan;
-
     /** Whether to enable debug output */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|HTN|Debug")
     bool bDebugOutput;
 
-private:
+    UPROPERTY(BlueprintReadOnly, Category = "AI|HTN")
+    UHTNDFSPlanner* Planner;
+
+   private:
     /** Initializes the component */
     void Initialize();
 
@@ -191,4 +207,6 @@ private:
     
     /** Number of consecutive plan failures */
     int32 ConsecutivePlanFailures;
+
+    FHTNPlan EmptyPlan;
 };
