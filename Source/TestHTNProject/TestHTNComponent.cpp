@@ -41,8 +41,7 @@ void UTestHTNComponent::CreateGetFoodPlan()
     State->SetPropertyValue<FVector>("DoorLocation", DoorLocation);
     
     // Randomly decide if the fridge has food
-    bool bFridgeHasFood = FMath::RandBool();
-    State->SetPropertyValue<bool>("FridgeHasFood", bFridgeHasFood);
+    State->SetPropertyValue<bool>("FridgeHasFood", true);
     
     // Initialize food-related state properties
     State->SetPropertyValue<bool>("HasFood", false);
@@ -86,6 +85,12 @@ void UTestHTNComponent::CreateGetFoodPlan()
     HasFoodEffect->PropertyKey = "HasFood";
     HasFoodEffect->PropertyValue = FHTNProperty(true);
     UseFridgeTask->Effects.Add(HasFoodEffect);
+
+	// Effect: FridgeHasFood = false
+	UHTNSetPropertyEffect* FridgeEmptiedEffect = NewObject<UHTNSetPropertyEffect>(UseFridgeTask);
+	FridgeEmptiedEffect->PropertyKey = "FridgeHasFood";
+	FridgeEmptiedEffect->PropertyValue = FHTNProperty(false);
+	UseFridgeTask->Effects.Add(FridgeEmptiedEffect);
     
     // 3. Move to table
     UHTNMoveToTask* MoveToTableTask = Cast<UHTNMoveToTask>(UHTNTaskFactory::Get()->CreatePrimitiveTask(UHTNMoveToTask::StaticClass(), GetFoodTask, "MoveToTable"));
@@ -186,7 +191,7 @@ void UTestHTNComponent::CreateGetFoodPlan()
     if (GeneratePlan(GoalTasks))
     {
         UE_LOG(LogTemp, Display, TEXT("Successfully generated Get Food plan! Fridge has food: %s"), 
-               bFridgeHasFood ? TEXT("Yes") : TEXT("No"));
+               State->GetPropertyValue<bool>("FridgeHasFood", false) ? TEXT("Yes") : TEXT("No"));
     }
     else
     {
