@@ -178,11 +178,7 @@ EHTNTaskStatus UHTNPlayMontageTask::TickTask_Implementation(UHTNExecutionContext
 
 void UHTNPlayMontageTask::EndTask_Implementation(UHTNExecutionContext* ExecutionContext, EHTNTaskStatus FinalStatus)
 {
-    // Make sure to apply effects if the task succeeded
-    if (FinalStatus == EHTNTaskStatus::Succeeded)
-    {
-        Super::EndTask_Implementation(ExecutionContext, FinalStatus);
-    }
+    Super::EndTask_Implementation(ExecutionContext, FinalStatus);
 
     // If the montage is still playing and the task is ending, stop it
     if (bMontageStarted && !bMontageCompleted)

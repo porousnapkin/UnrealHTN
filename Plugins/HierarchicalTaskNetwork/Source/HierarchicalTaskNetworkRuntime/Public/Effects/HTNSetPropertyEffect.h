@@ -24,7 +24,6 @@ public:
 	virtual bool ValidateEffect_Implementation() const override;
 	//~ End UHTNEffect Interface
 
-protected:
 	/** The key of the property to set */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	FName PropertyKey;

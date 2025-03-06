@@ -198,6 +198,8 @@ TStatId UHTNPlanExecutor::GetStatId() const
 
 bool UHTNPlanExecutor::StartPlan(const FHTNPlan& InPlan, UHTNExecutionContext* inExecutionContext, AActor* InOwner)
 {
+    ExecutionContext = inExecutionContext;
+    
     // Check if a plan is already executing
     if (bIsExecuting)
     {
@@ -621,12 +623,11 @@ void UHTNPlanExecutor::OnTaskCompleted(UHTNPrimitiveTask* Task, EHTNTaskStatus S
     
     // Remove task from execution tracking
     TaskStartTimes.Remove(Task);
+
+    Task->EndTask(ExecutionContext, Status);
     
     if (Status == EHTNTaskStatus::Succeeded)
     {
-        // Apply task effects to the world state
-        ApplyTaskEffects(Task);
-        
         // Broadcast task succeeded event
         OnTaskSucceeded.Broadcast(CurrentPlan, Task);
         

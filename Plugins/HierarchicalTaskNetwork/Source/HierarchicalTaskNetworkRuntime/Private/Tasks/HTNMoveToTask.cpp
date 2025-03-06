@@ -82,6 +82,11 @@ EHTNTaskStatus UHTNMoveToTask::ExecuteTask_Implementation(UHTNExecutionContext* 
         MoveRequest.SetReachTestIncludesGoalRadius(false);
     }
 
+
+    //Listen for move finished
+    Controller->ReceiveMoveCompleted.AddDynamic(this, &UHTNMoveToTask::OnMoveFinished);
+    DidFinish = false;
+    
     // Start the movement
     FPathFollowingRequestResult RequestResult = Controller->MoveTo(MoveRequest);
     
@@ -106,6 +111,26 @@ EHTNTaskStatus UHTNMoveToTask::ExecuteTask_Implementation(UHTNExecutionContext* 
 
 EHTNTaskStatus UHTNMoveToTask::TickTask_Implementation(UHTNExecutionContext* ExecutionContext, float DeltaTime)
 {
+    if(DidFinish)
+    {
+        if(ResultOfPathing == EPathFollowingResult::Type::Success)
+        {
+            return EHTNTaskStatus::Succeeded;
+        }
+        else
+        {
+            if(ResultOfPathing == EPathFollowingResult::Type::Blocked)
+                UE_LOG(LogHTNPlannerPlugin, Warning, TEXT("MoveTo task failed during tick: Blocked"));
+            if(ResultOfPathing == EPathFollowingResult::Type::OffPath)
+                UE_LOG(LogHTNPlannerPlugin, Warning, TEXT("MoveTo task failed during tick: OffPath"));
+            if(ResultOfPathing == EPathFollowingResult::Type::Aborted)
+                UE_LOG(LogHTNPlannerPlugin, Warning, TEXT("MoveTo task failed during tick: Aborted"));
+            if(ResultOfPathing == EPathFollowingResult::Type::Invalid)
+                UE_LOG(LogHTNPlannerPlugin, Warning, TEXT("MoveTo task failed during tick: Invalid"));
+            return EHTNTaskStatus::Failed;
+        }
+    }
+    
     // Get the controller from the world state's owner
     AAIController* Controller = GetController(ExecutionContext->GetWorldState());
     if (!Controller)
@@ -205,16 +230,14 @@ EHTNTaskStatus UHTNMoveToTask::TickTask_Implementation(UHTNExecutionContext* Exe
 
 void UHTNMoveToTask::EndTask_Implementation(UHTNExecutionContext* ExecutionContext, EHTNTaskStatus FinalStatus)
 {
-    // Apply task effects only on success
-    if (FinalStatus == EHTNTaskStatus::Succeeded)
-    {
-        Super::EndTask_Implementation(ExecutionContext, FinalStatus);
-    }
+    Super::EndTask_Implementation(ExecutionContext, FinalStatus);
     
     // Clean up the move request if needed
     AAIController* Controller = GetController(ExecutionContext->GetWorldState());
     if (Controller && MoveRequestID != FAIRequestID::InvalidRequest)
     {
+        Controller->ReceiveMoveCompleted.RemoveDynamic(this, &UHTNMoveToTask::OnMoveFinished);
+        
         // Only abort if we failed or the request is still active
         if (FinalStatus != EHTNTaskStatus::Succeeded)
         {
@@ -398,4 +421,13 @@ bool UHTNMoveToTask::GetDestination(const UHTNWorldState* WorldState, FVector& O
     }
     
     return false;
+}
+
+void UHTNMoveToTask::OnMoveFinished(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+{
+    if(MoveRequestID)
+    {
+        DidFinish = true;
+        ResultOfPathing = Result;
+    }
 }

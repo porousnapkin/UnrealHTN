@@ -29,7 +29,6 @@ public:
     virtual bool ValidateTask_Implementation() const override;
     //~ End UHTNPrimitiveTask Interface
 
-protected:
     /** The animation montage to play */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Task|Animation")
     TObjectPtr<UAnimMontage> Montage;

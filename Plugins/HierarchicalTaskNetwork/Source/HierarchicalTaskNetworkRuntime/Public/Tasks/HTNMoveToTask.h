@@ -26,7 +26,6 @@ public:
     virtual bool ValidateTask_Implementation() const override;
     //~ End UHTNPrimitiveTask Interface
 
-protected:
     /** How to specify the destination */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Task|Movement")
     bool bUseParameterLocation;
@@ -45,7 +44,7 @@ protected:
 
     /** How close the agent needs to get to the target (in cm) */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Task|Movement", meta = (ClampMin = "0.0"))
-    float AcceptanceRadius;
+    float AcceptanceRadius = 100;
 
     /** Whether to project the point to the navigation mesh */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Task|Movement")
@@ -78,4 +77,10 @@ private:
     
     /** Get the destination from world state during planning/validation */
     bool GetDestination(const UHTNWorldState* WorldState, FVector& OutDestination) const;
+
+    bool DidFinish = false;
+    EPathFollowingResult::Type ResultOfPathing;
+    
+    UFUNCTION()
+    void OnMoveFinished(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 };

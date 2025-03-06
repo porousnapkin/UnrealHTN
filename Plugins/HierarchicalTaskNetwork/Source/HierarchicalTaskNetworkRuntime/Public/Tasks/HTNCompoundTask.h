@@ -74,7 +74,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "HTN|Debug")
     FString GetDecompositionTreeString(int32 Indent = 0) const;
 
-protected:
     /** Methods that can be used to decompose this task */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Task|Methods")
     TArray<UHTNMethod*> Methods;

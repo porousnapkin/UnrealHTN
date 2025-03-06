@@ -49,7 +49,6 @@ public:
 	virtual bool ValidateCondition_Implementation() const override;
 	//~ End UHTNCondition Interface
 
-protected:
 	/** The key of the property to check */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Condition")
 	FName PropertyKey;

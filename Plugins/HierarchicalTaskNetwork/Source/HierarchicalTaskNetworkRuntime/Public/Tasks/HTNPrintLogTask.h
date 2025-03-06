@@ -53,7 +53,6 @@ public:
     virtual bool ValidateTask_Implementation() const override;
     //~ End UHTNPrimitiveTask Interface
 
-protected:
     /** The message to display */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Task|Debug", meta = (MultiLine = true))
     FString Message;

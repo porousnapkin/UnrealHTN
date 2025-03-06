@@ -122,9 +122,6 @@ EHTNTaskStatus UHTNPrimitiveTask::ExecuteTask_Implementation(UHTNExecutionContex
 
 EHTNTaskStatus UHTNPrimitiveTask::TickTask_Implementation(UHTNExecutionContext* ExecutionContext, float DeltaTime)
 {
-    // Base implementation just maintains the current status
-    // For tasks that execute over time, this should be overridden to update the task's state
-    
     // Check for execution timeout if one is set
     if (MaxExecutionTime > 0.0f)
     {
@@ -144,8 +141,8 @@ EHTNTaskStatus UHTNPrimitiveTask::TickTask_Implementation(UHTNExecutionContext* 
 
 void UHTNPrimitiveTask::EndTask_Implementation(UHTNExecutionContext* ExecutionContext, EHTNTaskStatus FinalStatus)
 {
-    // Base implementation does nothing
-    // Derived classes should override this to perform cleanup
+    //End the execution
+    bIsExecuting = false;
     
     // If the task succeeded, apply its effects to the world state
     if (FinalStatus == EHTNTaskStatus::Succeeded)

@@ -143,7 +143,6 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "HTN|Task")
     FHTNTaskExecutionDelegate OnTaskAborted;
 
-protected:
     /** Preconditions that must be satisfied for this task to be applicable */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Task|Preconditions")
     TArray<UHTNCondition*> Preconditions;
@@ -152,6 +151,7 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Task|Effects")
     TArray<UHTNEffect*> Effects;
 
+protected:
     /** Current execution status */
     UPROPERTY(BlueprintReadOnly, Category = "Task")
     EHTNTaskStatus Status;
