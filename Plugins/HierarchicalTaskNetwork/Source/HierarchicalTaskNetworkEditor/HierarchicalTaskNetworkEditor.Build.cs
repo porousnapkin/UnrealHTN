@@ -30,6 +30,12 @@ public class HierarchicalTaskNetworkEditor : ModuleRules
 				"Kismet",
 				"BlueprintGraph",
 				"HierarchicalTaskNetworkRuntime",
+				"Slate",         
+				"SlateCore",     
+				"GraphEditor",
+				"ToolMenus",
+				"ApplicationCore",  
+				"InputCore"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -41,7 +47,7 @@ public class HierarchicalTaskNetworkEditor : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore",
+				"SlateCore", 
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

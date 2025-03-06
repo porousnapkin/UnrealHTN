@@ -49,7 +49,11 @@ public:
      */
     UFUNCTION(BlueprintCallable, Category = "HTN|TaskFactory")
     bool RegisterCompoundTaskClass(TSubclassOf<UHTNCompoundTask> TaskClass, FName Category = NAME_None);
-
+ 
+     // Helper template function for creating tasks
+     template<typename TaskType>
+     TaskType* CreateTask(TSubclassOf<TaskType> TaskClass, UObject* Outer, FName TaskName);
+ 
     /**
      * Creates a new instance of a primitive task.
      * 
@@ -124,10 +128,6 @@ public:
     bool ValidateTask(UHTNTask* Task) const;
 
 private:
-    // Helper template function for creating tasks
-    template<typename TaskType>
-    TaskType* CreateTask(TSubclassOf<TaskType> TaskClass, UObject* Outer, FName TaskName);
-
     // Static singleton instance
     static UHTNTaskFactory* Instance;
 
@@ -198,3 +198,37 @@ public:
     UFUNCTION(BlueprintCallable, Category = "HTN|TaskFactory", meta = (DisplayName = "Get Task Categories"))
     static TArray<FName> GetTaskCategories();
 };
+
+
+template <typename TaskType>
+FORCEINLINE TaskType* UHTNTaskFactory::CreateTask(TSubclassOf<TaskType> TaskClass, UObject* Outer, FName TaskName)
+{
+ if (!TaskClass)
+ {
+  UE_LOG(LogHTNPlannerPlugin, Warning, TEXT("Attempted to create task with null class"));
+  return nullptr;
+ }
+
+ // Use transient package if no outer is specified
+ if (!Outer)
+ {
+  Outer = GetTransientPackage();
+ }
+
+ // Create a new instance of the task
+ TaskType* NewTask = NewObject<TaskType>(Outer, TaskClass);
+
+ // Set the name if provided
+ if (!TaskName.IsNone())
+ {
+  NewTask->TaskName = TaskName;
+ }
+
+ // Validate the task
+ if (!ValidateTask(NewTask))
+ {
+  UE_LOG(LogHTNPlannerPlugin, Warning, TEXT("Created task %s is invalid"), *NewTask->ToString());
+ }
+
+ return NewTask;
+}

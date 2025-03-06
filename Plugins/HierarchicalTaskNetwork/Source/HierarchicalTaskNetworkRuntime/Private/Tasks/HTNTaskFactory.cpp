@@ -110,39 +110,6 @@ bool UHTNTaskFactory::RegisterCompoundTaskClass(TSubclassOf<UHTNCompoundTask> Ta
     return true;
 }
 
-template<typename TaskType>
-TaskType* UHTNTaskFactory::CreateTask(TSubclassOf<TaskType> TaskClass, UObject* Outer, FName TaskName)
-{
-    if (!TaskClass)
-    {
-        UE_LOG(LogHTNPlannerPlugin, Warning, TEXT("Attempted to create task with null class"));
-        return nullptr;
-    }
-    
-    // Use transient package if no outer is specified
-    if (!Outer)
-    {
-        Outer = GetTransientPackage();
-    }
-    
-    // Create a new instance of the task
-    TaskType* NewTask = NewObject<TaskType>(Outer, TaskClass);
-    
-    // Set the name if provided
-    if (!TaskName.IsNone())
-    {
-        NewTask->TaskName = TaskName;
-    }
-    
-    // Validate the task
-    if (!ValidateTask(NewTask))
-    {
-        UE_LOG(LogHTNPlannerPlugin, Warning, TEXT("Created task %s is invalid"), *NewTask->ToString());
-    }
-    
-    return NewTask;
-}
-
 UHTNPrimitiveTask* UHTNTaskFactory::CreatePrimitiveTask(TSubclassOf<UHTNPrimitiveTask> TaskClass, UObject* Outer, FName TaskName)
 {
     return CreateTask<UHTNPrimitiveTask>(TaskClass, Outer, TaskName);

@@ -1,20 +1,59 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "HierarchicalTaskNetworkEditor.h"
+#include "AssetTypeActions_HTNGraph.h"
+#include "AssetToolsModule.h"
+#include "IAssetTools.h"
 
-#define LOCTEXT_NAMESPACE "FHierarchicalTaskNetworkEditorModule"
+#define LOCTEXT_NAMESPACE "FHTNGraphEditor"
 
 void FHierarchicalTaskNetworkEditorModule::StartupModule()
 {
-	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
+	// Register the asset category
+	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	HTNAssetCategory = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("HTN")), LOCTEXT("HTNAssetCategory", "Hierarchical Task Network"));
+	
+	// Register asset types
+	RegisterAssetTypes();
 }
 
 void FHierarchicalTaskNetworkEditorModule::ShutdownModule()
 {
-	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
-	// we call this function before unloading the module.
+	// Unregister asset types
+	UnregisterAssetTypes();
+}
+
+void FHierarchicalTaskNetworkEditorModule::RegisterAssetTypes()
+{
+	// Load the asset tools module to register asset types
+	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+
+	// Register HTN Graph asset type actions
+	TSharedRef<IAssetTypeActions> HTNGraphAction = MakeShareable(new FAssetTypeActions_HTNGraph);
+	RegisterAssetTypeActions(HTNGraphAction);
+}
+
+void FHierarchicalTaskNetworkEditorModule::UnregisterAssetTypes()
+{
+	// Unregister all the asset types that we registered
+	if (FModuleManager::Get().IsModuleLoaded("AssetTools"))
+	{
+		IAssetTools& AssetTools = FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools").Get();
+		for (int32 i = 0; i < CreatedAssetTypeActions.Num(); ++i)
+		{
+			AssetTools.UnregisterAssetTypeActions(CreatedAssetTypeActions[i].ToSharedRef());
+		}
+	}
+	CreatedAssetTypeActions.Empty();
+}
+
+void FHierarchicalTaskNetworkEditorModule::RegisterAssetTypeActions(TSharedRef<IAssetTypeActions> Action)
+{
+	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	AssetTools.RegisterAssetTypeActions(Action);
+	CreatedAssetTypeActions.Add(Action);
 }
 
 #undef LOCTEXT_NAMESPACE
-	
+
 IMPLEMENT_MODULE(FHierarchicalTaskNetworkEditorModule, HierarchicalTaskNetworkEditor)

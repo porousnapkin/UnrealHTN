@@ -159,7 +159,7 @@ FString UHTNDebugVisualizationComponent::GetPlanVisualizationString() const
     // Task list
     Result += TEXT("\nTasks:\n");
     
-    int32 StartIndex = FMath::Max(0, CurrentPlan.CurrentTaskIndex - 2);
+    int32 StartIndex = FMath::Max(0, CurrentPlan.CurrentTaskIndex - 5);
     int32 EndIndex = FMath::Min(CurrentPlan.Tasks.Num() - 1, StartIndex + MaxTasksToDisplay - 1);
     
     for (int32 i = StartIndex; i <= EndIndex; ++i)
