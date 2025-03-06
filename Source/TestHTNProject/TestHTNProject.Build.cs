@@ -8,7 +8,7 @@ public class TestHTNProject : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HierarchicalTaskNetworkRuntime" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
