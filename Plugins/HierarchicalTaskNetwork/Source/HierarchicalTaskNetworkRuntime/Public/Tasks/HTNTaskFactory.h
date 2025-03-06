@@ -205,7 +205,7 @@ FORCEINLINE TaskType* UHTNTaskFactory::CreateTask(TSubclassOf<TaskType> TaskClas
 {
  if (!TaskClass)
  {
-  UE_LOG(LogHTNPlannerPlugin, Warning, TEXT("Attempted to create task with null class"));
+  UE_LOG(LogTemp, Warning, TEXT("Attempted to create task with null class"));
   return nullptr;
  }
 
@@ -227,7 +227,7 @@ FORCEINLINE TaskType* UHTNTaskFactory::CreateTask(TSubclassOf<TaskType> TaskClas
  // Validate the task
  if (!ValidateTask(NewTask))
  {
-  UE_LOG(LogHTNPlannerPlugin, Warning, TEXT("Created task %s is invalid"), *NewTask->ToString());
+  UE_LOG(LogTemp, Warning, TEXT("Created task %s is invalid"), *NewTask->ToString());
  }
 
  return NewTask;
