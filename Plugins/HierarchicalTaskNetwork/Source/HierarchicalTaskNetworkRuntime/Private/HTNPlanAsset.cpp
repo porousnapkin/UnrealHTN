@@ -1,4 +1,4 @@
-// HTNPlanAsset.cpp
+// HTNPlanAsset.cpp (Runtime Module)
 
 #include "HTNPlanAsset.h"
 #include "Serialization/JsonSerializer.h"
@@ -111,7 +111,7 @@ UHTNPlanAsset* UHTNPlanAsset::LoadFromJson(const FString& JsonString, UObject* O
             TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&PlanJsonString);
             FJsonSerializer::Serialize(PlanObject->ToSharedRef(), Writer);
             
-            if (!PlanAsset->Plan.FromJson(JsonString))
+            if (!PlanAsset->Plan.FromJson(PlanJsonString))
             {
                 UE_LOG(LogHTNPlannerPlugin, Warning, TEXT("Failed to parse plan data from JSON"));
             }
