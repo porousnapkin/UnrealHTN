@@ -15,8 +15,13 @@
 #include "EdGraph/EdGraph.h"
 #include "ToolMenus.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
-#include "ToolMenus.h"
+#include "HTNGraphEditorCommands.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "HTNGraphNode_PrimitiveTask.h"
+#include "HTNGraphNode_CompoundTask.h"
+#include "HTNGraphNode_Method.h"
+#include "HTNGraphNode_Condition.h"
+#include "HTNGraphNode_Effect.h"
 
 #define LOCTEXT_NAMESPACE "HTNPlanAssetEditor"
 
@@ -54,6 +59,39 @@ void FHTNPlanAssetEditor::InitHTNPlanAssetEditor(const EToolkitMode::Type Mode, 
     GraphEditorCommands->MapAction(FGenericCommands::Get().Duplicate,
         FExecuteAction::CreateSP(this, &FHTNPlanAssetEditor::OnCommandDuplicate),
         FCanExecuteAction::CreateSP(this, &FHTNPlanAssetEditor::CanDuplicateNode));
+
+    // Map HTN-specific commands
+    GraphEditorCommands->MapAction(FHTNGraphEditorCommands::Get().AddPrimitiveTaskNode,
+        FExecuteAction::CreateSP(this, &FHTNPlanAssetEditor::OnAddPrimitiveTaskNode),
+        FCanExecuteAction::CreateLambda([]() { return true; }));
+
+    GraphEditorCommands->MapAction(FHTNGraphEditorCommands::Get().AddCompoundTaskNode,
+        FExecuteAction::CreateSP(this, &FHTNPlanAssetEditor::OnAddCompoundTaskNode),
+        FCanExecuteAction::CreateLambda([]() { return true; }));
+
+    GraphEditorCommands->MapAction(FHTNGraphEditorCommands::Get().AddMethodNode,
+        FExecuteAction::CreateSP(this, &FHTNPlanAssetEditor::OnAddMethodNode),
+        FCanExecuteAction::CreateLambda([]() { return true; }));
+
+    GraphEditorCommands->MapAction(FHTNGraphEditorCommands::Get().AddConditionNode,
+        FExecuteAction::CreateSP(this, &FHTNPlanAssetEditor::OnAddConditionNode),
+        FCanExecuteAction::CreateLambda([]() { return true; }));
+
+    GraphEditorCommands->MapAction(FHTNGraphEditorCommands::Get().AddEffectNode,
+        FExecuteAction::CreateSP(this, &FHTNPlanAssetEditor::OnAddEffectNode),
+        FCanExecuteAction::CreateLambda([]() { return true; }));
+
+    GraphEditorCommands->MapAction(FHTNGraphEditorCommands::Get().AutoArrangeNodes,
+        FExecuteAction::CreateSP(this, &FHTNPlanAssetEditor::OnAutoArrangeNodes),
+        FCanExecuteAction::CreateLambda([]() { return true; }));
+
+    GraphEditorCommands->MapAction(FHTNGraphEditorCommands::Get().FocusOnSelection,
+        FExecuteAction::CreateSP(this, &FHTNPlanAssetEditor::OnFocusOnSelection),
+        FCanExecuteAction::CreateLambda([]() { return true; }));
+
+    GraphEditorCommands->MapAction(FHTNGraphEditorCommands::Get().ToggleDebugView,
+        FExecuteAction::CreateSP(this, &FHTNPlanAssetEditor::OnToggleDebugView),
+        FCanExecuteAction::CreateLambda([]() { return true; }));
     
     // Create the graph editor widget
     CreateGraphEditorWidget();
@@ -416,6 +454,26 @@ void FHTNPlanAssetEditor::ExtendToolbar()
                     LOCTEXT("ValidatePlanTooltip", "Validate the HTN graph"),
                     FSlateIcon(FAppStyle::GetAppStyleSetName(), "AssetEditor.CheckForErrors")
                 );
+
+                // Add a separator for node creation commands
+                ToolbarBuilder.AddSeparator();
+
+                // Add node creation buttons using your registered commands
+                ToolbarBuilder.AddToolBarButton(FHTNGraphEditorCommands::Get().AddPrimitiveTaskNode);
+                ToolbarBuilder.AddToolBarButton(FHTNGraphEditorCommands::Get().AddCompoundTaskNode);
+                ToolbarBuilder.AddToolBarButton(FHTNGraphEditorCommands::Get().AddMethodNode);
+                ToolbarBuilder.AddToolBarButton(FHTNGraphEditorCommands::Get().AddConditionNode);
+                ToolbarBuilder.AddToolBarButton(FHTNGraphEditorCommands::Get().AddEffectNode);
+
+                // Add another separator for organization commands
+                ToolbarBuilder.AddSeparator();
+
+                // Add graph organization buttons
+                ToolbarBuilder.AddToolBarButton(FHTNGraphEditorCommands::Get().AutoArrangeNodes);
+                ToolbarBuilder.AddToolBarButton(FHTNGraphEditorCommands::Get().FocusOnSelection);
+
+                // Add debug button
+                ToolbarBuilder.AddToolBarButton(FHTNGraphEditorCommands::Get().ToggleDebugView);
             }
             ToolbarBuilder.EndSection();
         }
@@ -561,4 +619,255 @@ bool FHTNPlanAssetEditor::CanDuplicateNode() const
         return SelectedNodes.Num() > 0;
     }
     return false;
+}
+
+// Node creation functions
+void FHTNPlanAssetEditor::OnAddPrimitiveTaskNode()
+{
+    // Get cursor location in the graph
+    FVector2D NodePosition = GraphEditorWidget->GetPasteLocation();
+
+    // Create the primitive task node at the cursor position
+    UHTNGraphNode_PrimitiveTask* NewNode = Cast<UHTNGraphNode_PrimitiveTask>(
+        AddNewNode(UHTNGraphNode_PrimitiveTask::StaticClass(), NodePosition, true));
+
+    if (NewNode)
+    {
+        // Initialize with default values if needed
+        NewNode->NodeTitle = LOCTEXT("NewPrimitiveTask", "New Primitive Task");
+
+        // Notify changes
+        GraphData->GetGraph()->NotifyGraphChanged();
+
+        // Focus on the newly created node
+        GraphEditorWidget->SetNodeSelection(NewNode, true);
+    }
+}
+
+void FHTNPlanAssetEditor::OnAddCompoundTaskNode()
+{
+    FVector2D NodePosition = GraphEditorWidget->GetPasteLocation();
+
+    UHTNGraphNode_CompoundTask* NewNode = Cast<UHTNGraphNode_CompoundTask>(
+        AddNewNode(UHTNGraphNode_CompoundTask::StaticClass(), NodePosition, true));
+
+    if (NewNode)
+    {
+        NewNode->NodeTitle = LOCTEXT("NewCompoundTask", "New Compound Task");
+        GraphData->GetGraph()->NotifyGraphChanged();
+        GraphEditorWidget->SetNodeSelection(NewNode, true);
+    }
+}
+
+void FHTNPlanAssetEditor::OnAddMethodNode()
+{
+    FVector2D NodePosition = GraphEditorWidget->GetPasteLocation();
+
+    UHTNGraphNode_Method* NewNode = Cast<UHTNGraphNode_Method>(
+        AddNewNode(UHTNGraphNode_Method::StaticClass(), NodePosition, true));
+
+    if (NewNode)
+    {
+        NewNode->NodeTitle = LOCTEXT("NewMethod", "New Method");
+        GraphData->GetGraph()->NotifyGraphChanged();
+        GraphEditorWidget->SetNodeSelection(NewNode, true);
+    }
+}
+
+void FHTNPlanAssetEditor::OnAddConditionNode()
+{
+    FVector2D NodePosition = GraphEditorWidget->GetPasteLocation();
+
+    UHTNGraphNode_Condition* NewNode = Cast<UHTNGraphNode_Condition>(
+        AddNewNode(UHTNGraphNode_Condition::StaticClass(), NodePosition, true));
+
+    if (NewNode)
+    {
+        NewNode->NodeTitle = LOCTEXT("NewCondition", "New Condition");
+        GraphData->GetGraph()->NotifyGraphChanged();
+        GraphEditorWidget->SetNodeSelection(NewNode, true);
+    }
+}
+
+void FHTNPlanAssetEditor::OnAddEffectNode()
+{
+    FVector2D NodePosition = GraphEditorWidget->GetPasteLocation();
+
+    UHTNGraphNode_Effect* NewNode = Cast<UHTNGraphNode_Effect>(
+        AddNewNode(UHTNGraphNode_Effect::StaticClass(), NodePosition, true));
+
+    if (NewNode)
+    {
+        NewNode->NodeTitle = LOCTEXT("NewEffect", "New Effect");
+        GraphData->GetGraph()->NotifyGraphChanged();
+        GraphEditorWidget->SetNodeSelection(NewNode, true);
+    }
+}
+
+// Graph organization functions
+void FHTNPlanAssetEditor::OnAutoArrangeNodes()
+{
+    if (!GraphEditorWidget.IsValid() || !GraphData || !GraphData->GetGraph())
+    {
+        UE_LOG(LogHTNPlannerEditorPlugin, Warning, TEXT("Cannot auto-arrange nodes: Invalid graph editor or graph"));
+        return;
+    }
+
+    // Get the graph
+    UEdGraph* Graph = GraphData->GetGraph();
+
+    // Constants for layout
+    const float HorizontalSpacing = 200.0f;
+    const float VerticalSpacing = 150.0f;
+    const float StartX = 0.0f;
+    const float StartY = 0.0f;
+
+    // Find the root node
+    UHTNGraphNode_Root* RootNode = nullptr;
+    for (UEdGraphNode* Node : Graph->Nodes)
+    {
+        if (UHTNGraphNode_Root* TestRoot = Cast<UHTNGraphNode_Root>(Node))
+        {
+            RootNode = TestRoot;
+            break;
+        }
+    }
+
+    if (RootNode)
+    {
+        // Set the root position
+        RootNode->NodePosX = StartX;
+        RootNode->NodePosY = StartY;
+
+        // Simple layered layout algorithm
+        TMap<int32, TArray<UEdGraphNode*>> Layers;
+
+        // Start with the root at layer 0
+        Layers.Add(0, { RootNode });
+
+        // Determine layer for each node by traversing from the root
+        TArray<UEdGraphNode*> NodesToProcess = { RootNode };
+        TSet<UEdGraphNode*> ProcessedNodes;
+
+        while (NodesToProcess.Num() > 0)
+        {
+            UEdGraphNode* CurrentNode = NodesToProcess[0];
+            NodesToProcess.RemoveAt(0);
+
+            if (ProcessedNodes.Contains(CurrentNode))
+            {
+                continue;
+            }
+
+            ProcessedNodes.Add(CurrentNode);
+
+            // Find the layer of the current node
+            int32 CurrentLayer = -1;
+            for (const auto& LayerEntry : Layers)
+            {
+                if (LayerEntry.Value.Contains(CurrentNode))
+                {
+                    CurrentLayer = LayerEntry.Key;
+                    break;
+                }
+            }
+
+            if (CurrentLayer == -1)
+            {
+                continue;
+            }
+
+            // Process output pins and their connections
+            for (UEdGraphPin* Pin : CurrentNode->Pins)
+            {
+                if (Pin->Direction == EGPD_Output)
+                {
+                    for (UEdGraphPin* LinkedPin : Pin->LinkedTo)
+                    {
+                        UEdGraphNode* TargetNode = LinkedPin->GetOwningNode();
+
+                        if (!ProcessedNodes.Contains(TargetNode))
+                        {
+                            // Add to the next layer
+                            int32 NextLayer = CurrentLayer + 1;
+                            if (!Layers.Contains(NextLayer))
+                            {
+                                Layers.Add(NextLayer, {});
+                            }
+                            Layers[NextLayer].Add(TargetNode);
+                            NodesToProcess.Add(TargetNode);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Position nodes by layer
+        for (const auto& LayerEntry : Layers)
+        {
+            int32 Layer = LayerEntry.Key;
+            const TArray<UEdGraphNode*>& NodesInLayer = LayerEntry.Value;
+
+            float XPos = StartX;
+            float YPos = StartY + Layer * VerticalSpacing;
+
+            // Position each node in this layer
+            for (int32 i = 0; i < NodesInLayer.Num(); ++i)
+            {
+                UEdGraphNode* Node = NodesInLayer[i];
+                Node->NodePosX = XPos + (i * HorizontalSpacing);
+                Node->NodePosY = YPos;
+            }
+        }
+
+        // Notify that the graph has changed to update the view
+        Graph->NotifyGraphChanged();
+    }
+    else
+    {
+        UE_LOG(LogHTNPlannerEditorPlugin, Warning, TEXT("Cannot auto-arrange nodes: No root node found"));
+    }
+}
+
+void FHTNPlanAssetEditor::OnFocusOnSelection()
+{
+    if (GraphEditorWidget.IsValid())
+    {
+        // Focus the graph editor on the selected nodes
+        GraphEditorWidget->ZoomToFit(true); // true = only selected nodes
+    }
+}
+
+void FHTNPlanAssetEditor::OnToggleDebugView()
+{
+    if (!GraphData)
+    {
+        return;
+    }
+
+    // Toggle the debug view state
+    GraphData->bIsInDebugMode = !GraphData->bIsInDebugMode;
+
+    // Update the graph display based on the debug state
+    if (GraphData->bIsInDebugMode)
+    {
+        // Enter debug visualization mode
+        UE_LOG(LogHTNPlannerEditorPlugin, Log, TEXT("Debug view enabled"));
+
+        // If you have additional debug visualization setup, add it here
+        // For example, you might update node appearances or display execution statistics
+    }
+    else
+    {
+        // Exit debug visualization mode
+        UE_LOG(LogHTNPlannerEditorPlugin, Log, TEXT("Debug view disabled"));
+
+        // Reset any debug visualization
+    }
+
+    // Refresh the graph to show debug information
+    if (GraphEditorWidget.IsValid())
+    {
+        GraphEditorWidget->NotifyGraphChanged();
+    }
 }

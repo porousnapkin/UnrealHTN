@@ -82,6 +82,21 @@ private:
      */
     UHTNGraphData* CreateGraphData();
 
+    // Node creation command handlers
+    void OnAddPrimitiveTaskNode();
+    void OnAddCompoundTaskNode();
+    void OnAddMethodNode();
+    void OnAddConditionNode();
+    void OnAddEffectNode();
+
+    // Graph organization command handlers
+    void OnAutoArrangeNodes();
+    void OnFocusOnSelection();
+
+    // Debug command handlers
+    void OnToggleDebugView();
+
+
 private:
     /** Tabs IDs for the asset editor */
     static const FName GraphTabId;

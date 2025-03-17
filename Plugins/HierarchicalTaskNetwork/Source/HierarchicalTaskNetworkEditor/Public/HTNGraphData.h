@@ -56,6 +56,11 @@ public:
      */
     bool ValidateGraph(TArray<FString>& OutErrors) const;
 
+    /**
+     * Track debug mode for editor.
+     */
+    bool bIsInDebugMode = false;
+
 private:
     /** The associated plan asset */
     UPROPERTY()

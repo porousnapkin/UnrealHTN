@@ -42,6 +42,8 @@ public:
 	/** Update this node from the provided Method */
 	void UpdateFromMethod(UHTNMethod* InMethod);
 
+
+
 protected:
 	/** Create input pins specific to this node */
 	virtual void CreateInputPins() override;

@@ -27,4 +27,7 @@ public:
 	
 	/** Clear the graph's contents */
 	void ClearGraph();
+
+	/** Whether the graph is currently in debug visualization mode */
+	bool bIsInDebugMode;
 };

@@ -47,7 +47,6 @@ public:
 	bool ValidateCondition() const;
 	virtual bool ValidateCondition_Implementation() const;
     
-protected:
 	/** Debug color for visualization */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Condition|Debug")
 	FLinearColor DebugColor;

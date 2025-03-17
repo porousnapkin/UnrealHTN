@@ -6,6 +6,7 @@
 #include "EdGraph/EdGraphSchema.h"
 #include "HTNGraphSchema.generated.h"
 
+class FHTNPlanAssetEditor;
 /**
  * Schema defining the rules for HTN graph connections and node interactions.
  * This class controls what connections are valid between nodes in an HTN graph.
@@ -35,4 +36,10 @@ public:
 	static const FName PC_Sequence;  // Sequence connection pin type
 	static const FName PC_Condition; // Condition pin type
 	static const FName PC_Effect;    // Effect pin type
+
+	// Helper function to validate a graph from the context menu
+	void ValidateGraphFromContextMenu(const UEdGraph* Graph) const;
+
+	// Helper function to get the editor for a graph
+	static FHTNPlanAssetEditor* GetEditorForGraph(const UEdGraph* Graph);
 };

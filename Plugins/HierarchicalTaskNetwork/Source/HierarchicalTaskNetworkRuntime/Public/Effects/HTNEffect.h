@@ -46,7 +46,6 @@ public:
 	bool ValidateEffect() const;
 	virtual bool ValidateEffect_Implementation() const;
     
-protected:
 	/** Debug color for visualization */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect|Debug")
 	FLinearColor DebugColor;

@@ -4,11 +4,15 @@
 #include "AssetTypeActions_HTNGraph.h"
 #include "AssetToolsModule.h"
 #include "IAssetTools.h"
+#include "HTNGraphEditorCommands.h" // Add this include
 
 #define LOCTEXT_NAMESPACE "FHTNGraphEditor"
 
 void FHierarchicalTaskNetworkEditorModule::StartupModule()
 {
+	// Register commands
+	FHTNGraphEditorCommands::Register();
+
 	// Register the asset category
 	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
 	HTNAssetCategory = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("HTN")), LOCTEXT("HTNAssetCategory", "Hierarchical Task Network"));
@@ -19,6 +23,9 @@ void FHierarchicalTaskNetworkEditorModule::StartupModule()
 
 void FHierarchicalTaskNetworkEditorModule::ShutdownModule()
 {
+	// Unregister commands
+	FHTNGraphEditorCommands::Unregister();
+
 	// Unregister asset types
 	UnregisterAssetTypes();
 }

@@ -3,6 +3,7 @@
 #include "AssetTypeActions_HTNGraph.h"
 #include "HierarchicalTaskNetworkEditor.h"
 #include "HTNPlanAsset.h"
+#include <HTNPlanAssetEditor.h>
 
 #define LOCTEXT_NAMESPACE "AssetTypeActions"
 
@@ -35,14 +36,15 @@ void FAssetTypeActions_HTNGraph::OpenAssetEditor(const TArray<UObject*>& InObjec
 		auto HTNAsset = Cast<UHTNPlanAsset>(*ObjIt);
 		if (HTNAsset)
 		{
-			// TODO: Implement HTNGraphEditor creation
-			// This will be implemented when we create the actual editor in a later phase
-			
-			// For now, just log
-			//UE_LOG(LogTemp, Display, TEXT("Opening HTN Graph Asset: %s"), *HTNAsset->GetName());
+			// Create a new HTN Plan Editor
+			TSharedRef<FHTNPlanAssetEditor> NewHTNEditor(new FHTNPlanAssetEditor());
+
+			// Initialize the editor with the HTN asset
+			NewHTNEditor->InitHTNPlanAssetEditor(EToolkitMode::Standalone, EditWithinLevelEditor, HTNAsset);
 		}
 	}
 }
+
 
 bool FAssetTypeActions_HTNGraph::HasActions(const TArray<UObject*>& InObjects) const
 {

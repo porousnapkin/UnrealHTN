@@ -57,6 +57,10 @@ public:
 	/** Get the border color for this node */
 	virtual FLinearColor GetBorderColor() const;
 	
+	/** Customizable title for the node */
+	UPROPERTY(EditAnywhere, Category = "Display")
+	FText NodeTitle;
+	
 protected:
 	/** Override to create input pins specific to the derived node type */
 	virtual void CreateInputPins() {}
